@@ -12,11 +12,19 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Toast;
 
+import org.json.JSONObject;
+
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Date;
 
 import fr.upem.android.geomsgclient.R;
+import fr.upem.android.geomsgclient.client.ChatAdapter;
+import fr.upem.android.geomsgclient.client.Message;
+import fr.upem.android.geomsgclient.client.MessageStatus;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
@@ -24,8 +32,12 @@ import io.socket.emitter.Emitter;
 public class MainActivity extends AppCompatActivity {
     private Socket socket;
     private EditText messageText;
-    private String serverAdress = "http://192.168.0.15:3000";
+    private String serverAdress = "http://geomsgserver.herokuapp.com/";
     private Location currentLocation = null;
+    private ListView chatListView;
+    private ChatAdapter chatAdapter;
+    private ArrayList<Message> messages;
+
     private LocationManager locationManager;
     private final static int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 1;
 
@@ -46,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3600000, 10, locationListener);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 10, locationListener);
         currentLocation = locationManager.getLastKnownLocation("network");
 
 
@@ -63,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
         socket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
 
         // if we receive a message
-        socket.on("new message", onNewMessage);
+        socket.on("chat message", onNewMessage);
         // if we are typing
         socket.on("typing", onTyping);
         // if we are not typing anymore
@@ -73,12 +85,18 @@ public class MainActivity extends AppCompatActivity {
 
         socket.connect();
 
+        messages = new ArrayList<>();
+        chatListView = (ListView) findViewById(R.id.chatListView);
+        chatAdapter = new ChatAdapter(this, messages);
+        chatListView.setAdapter(chatAdapter);
 
     }
 
-    private void addMessage(String message) {
-        // TODO
-        // insert message in app
+    private void addMessage(String message, int id) {
+        messages.add(new Message(message, MessageStatus.SENT, id, new Date()));
+        if(chatAdapter != null) {
+            chatAdapter.notifyDataSetChanged();
+        }
     }
 
     private void attemptSend(String message) {
@@ -87,8 +105,7 @@ public class MainActivity extends AppCompatActivity {
         }
         messageText.setText("");
         socket.emit("chat message", message);
-        socket.emit("chat message", currentLocation.toString());
-        addMessage(message);
+        addMessage(message, 0);
     }
 
     public void sendMessage(View v) {
@@ -140,12 +157,12 @@ public class MainActivity extends AppCompatActivity {
 
     private Emitter.Listener onNewMessage = new Emitter.Listener() {
         @Override
-        public void call(Object... args) {
+        public void call(final Object... args) {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    // TODO
-                    // call addMessage with the received text
+                    //JSONObject data = (JSONObject) args[0];
+                    addMessage((String)args[0], 1);
                 }
             });
         }
@@ -206,22 +223,20 @@ public class MainActivity extends AppCompatActivity {
     private final LocationListener locationListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
-
+            currentLocation = location;
+            socket.emit("update loc", "onLocationChanged: " + currentLocation.toString());
         }
 
         @Override
         public void onStatusChanged(String provider, int status, Bundle extras) {
-
         }
 
         @Override
         public void onProviderEnabled(String provider) {
-
         }
 
         @Override
         public void onProviderDisabled(String provider) {
-
         }
     };
 
