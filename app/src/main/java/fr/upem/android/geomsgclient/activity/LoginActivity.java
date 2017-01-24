@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import fr.upem.android.geomsgclient.R;
+import io.socket.client.Socket;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -30,8 +31,13 @@ public class LoginActivity extends AppCompatActivity {
             createAlertDialog("Name cannot be empty, please try again.");
             return;
         }
+        login(nameEditText.getText().toString().trim());
+
+    }
+
+    private void login(String userId) {
         Intent intent = new Intent(this, UserListActivity.class);
-        intent.putExtra("userId", nameEditText.getText().toString().trim());
+        intent.putExtra("userId", userId);
         startActivity(intent);
     }
 
