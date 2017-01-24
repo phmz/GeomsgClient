@@ -11,35 +11,27 @@ import android.widget.EditText;
 
 import fr.upem.android.geomsgclient.R;
 
-public class Login extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity {
 
     private EditText nameEditText;
-    private EditText passwordEditText;
     private Button loginButton;
-    private String name;
-    private String password;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         nameEditText = (EditText) findViewById(R.id.nameEditText);
-        passwordEditText = (EditText) findViewById(R.id.passwordEditText);
         loginButton = (Button) findViewById(R.id.loginButton);
     }
 
     public void onLogin(View v) {
+        nameEditText.setText("MARIO");
         if (nameEditText.getText().toString().trim().isEmpty() || nameEditText == null) {
             createAlertDialog("Name cannot be empty, please try again.");
             return;
         }
-        if (passwordEditText.toString().trim().isEmpty()) {
-            passwordEditText.setText("");
-        }
-        // TODO
-        // login to server
-        // if ok start mainactivity
-        Intent intent = new Intent(this, MainActivity.class);
+        Intent intent = new Intent(this, UserListActivity.class);
+        intent.putExtra("userId", nameEditText.getText().toString().trim());
         startActivity(intent);
     }
 

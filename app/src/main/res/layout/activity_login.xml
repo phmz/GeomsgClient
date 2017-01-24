@@ -8,7 +8,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="fr.upem.android.geomsgclient.activity.Login">
+    tools:context="fr.upem.android.geomsgclient.activity.LoginActivity">
 
     <EditText
         android:layout_width="wrap_content"
@@ -24,26 +24,14 @@
         android:id="@+id/nameEditText"
         android:hint="Type your name" />
 
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="textPassword"
-        android:ems="10"
-        android:layout_below="@+id/nameEditText"
-        android:layout_alignLeft="@+id/nameEditText"
-        android:layout_alignStart="@+id/nameEditText"
-        android:layout_marginTop="30dp"
-        android:id="@+id/passwordEditText"
-        android:hint="Type your password" />
-
     <Button
         android:text="Login"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/passwordEditText"
-        android:layout_alignLeft="@+id/passwordEditText"
-        android:layout_alignStart="@+id/passwordEditText"
-        android:layout_marginTop="26dp"
+        android:layout_marginTop="17dp"
         android:id="@+id/loginButton"
-        android:onClick="onLogin" />
+        android:onClick="onLogin"
+        android:layout_below="@+id/nameEditText"
+        android:layout_alignLeft="@+id/nameEditText"
+        android:layout_alignStart="@+id/nameEditText" />
 </RelativeLayout>

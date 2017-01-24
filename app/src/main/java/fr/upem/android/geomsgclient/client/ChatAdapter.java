@@ -8,7 +8,6 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
@@ -20,18 +19,18 @@ import fr.upem.android.geomsgclient.R;
 
 public class ChatAdapter extends BaseAdapter {
 
-    private static class MessageHolderSent {
+    private static class MessageSentHolder {
         private TextView messageTextView;
         private TextView dateTextView;
         private ImageView messageStatus;
     }
 
-    private static class MessageHolderReceived {
+    private static class MessageReceivedHolder {
         private TextView messageTextView;
         private TextView dateTextView;
     }
 
-    private static class MessageHolderDate {
+    private static class MessageDateHolder {
         private TextView dateTextView;
     }
 
@@ -66,46 +65,46 @@ public class ChatAdapter extends BaseAdapter {
             case -1:
                 // DATE CASE
                 SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");
-                MessageHolderDate holderDate;
+                MessageDateHolder holderDate;
                 // if(convertView == null) {
                 // new view method
                 convertView = LayoutInflater.from(context).inflate(R.layout.chat_date, null, false);
-                holderDate = new MessageHolderDate();
+                holderDate = new MessageDateHolder();
                 holderDate.dateTextView = (TextView) convertView.findViewById(R.id.dateTextView);
                 convertView.setTag(holderDate);
                /* } else {
-                    holderSent = (MessageHolderSent) convertView.getTag();
+                    holderSent = (MessageSentHolder) convertView.getTag();
                 }*/
                 holderDate.dateTextView.setText(dateFormat.format(message.getMessageTime()));
                 break;
             case 0:
                 // SELF CASE;
-                MessageHolderSent holderSent;
+                MessageSentHolder holderSent;
                // if(convertView == null) {
                     // new view method
                     convertView = LayoutInflater.from(context).inflate(R.layout.chat_sent, null, false);
-                    holderSent = new MessageHolderSent();
+                    holderSent = new MessageSentHolder();
                     holderSent.messageTextView = (TextView) convertView.findViewById(R.id.messageTextView);
                     holderSent.dateTextView = (TextView) convertView.findViewById(R.id.dateTextView);
                     convertView.setTag(holderSent);
                /* } else {
-                    holderSent = (MessageHolderSent) convertView.getTag();
+                    holderSent = (MessageSentHolder) convertView.getTag();
                 }*/
                 holderSent.messageTextView.setText(message.getMessage());
                 holderSent.dateTextView.setText(hourFormat.format(message.getMessageTime()));
                 break;
             default:
                 // OTHERWISE
-                MessageHolderReceived holderReceived;
+                MessageReceivedHolder holderReceived;
                // if(convertView == null) {
                     // new view method
                     convertView = LayoutInflater.from(context).inflate(R.layout.chat_received, null, false);
-                    holderReceived = new MessageHolderReceived();
+                    holderReceived = new MessageReceivedHolder();
                     holderReceived.messageTextView = (TextView) convertView.findViewById(R.id.messageTextView);
                     holderReceived.dateTextView = (TextView) convertView.findViewById(R.id.dateTextView);
                     convertView.setTag(holderReceived);
                /* } else {
-                    holderReceived = (MessageHolderReceived) convertView.getTag();
+                    holderReceived = (MessageReceivedHolder) convertView.getTag();
                 }*/
                 holderReceived.messageTextView.setText(message.getMessage());
                 holderReceived.dateTextView.setText(hourFormat.format(message.getMessageTime()));

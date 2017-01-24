@@ -32,11 +32,11 @@ import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
-public class MainActivity extends AppCompatActivity {
+public class ChatActivity extends AppCompatActivity {
     private Socket socket;
     private EditText messageText;
-    private String serverAddress = "http://geomsgserver.herokuapp.com/";
-    //private String serverAddress = "http://192.168.0.15:3000";
+    //private String serverAddress = "http://geomsgserver.herokuapp.com/";
+    private String serverAddress = "http://192.168.0.15:3000";
     private Location currentLocation = null;
     private ListView chatListView;
     private ChatAdapter chatAdapter;
@@ -48,8 +48,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
+        setContentView(R.layout.activity_chat);
+        String userId = getIntent().getStringExtra("userId");
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission_group.LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
@@ -69,7 +69,9 @@ public class MainActivity extends AppCompatActivity {
         messageText = (EditText) findViewById(R.id.messageText);
 
         try {
-            socket = IO.socket(serverAddress);
+            IO.Options options = new IO.Options();
+            options.query = "userId=" + userId;
+            socket = IO.socket(serverAddress, options);
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
@@ -125,9 +127,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void sendMessage(View v) {
-        String msg = messageText.getText().toString().trim();
+        /*String msg = messageText.getText().toString().trim();
         displayToast(msg);
-        attemptSend(msg);
+        attemptSend(msg);*/
+        attemptSend("Serie volui potui iis paulo uno primo nulli est. Liberet effingo im gi quantum id ad facilem.");
+        attemptSend("Persuasi fortasse aliaeque ex du supponit periculi.");
+        attemptSend("Abducendam imo his mem inchoandum geometriam conjunctam credidisse. Tur fal amen vix ipsa cum suae. An ut cognosco earundem credimus. De simus si vi utrum aliud omnis istas. Judicem studiis ac proponi nemoque ex. De quoties ex virorum effingo. De totamque de occurret an credenda referrem.");
+
     }
 
     private void displayToast(String msg) {

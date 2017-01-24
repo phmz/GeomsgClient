@@ -7,7 +7,8 @@
     android:clipChildren="false"
     android:paddingBottom="10dp"
     android:paddingRight="10dp"
-    android:paddingTop="10dp">
+    android:paddingTop="10dp"
+    android:paddingLeft="45dp">
 
 
     <RelativeLayout
@@ -23,11 +24,11 @@
             android:id="@+id/message_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingRight="100dp">
+            android:paddingRight="50dp">
 
             <TextView
                 android:id="@+id/messageTextView"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Serie volui potui iis paulo uno primo nulli est. Liberet effingo im gi quantum id ad facilem."
                 android:paddingLeft="10dp"
@@ -40,13 +41,14 @@
 
         <TextView
             android:id="@+id/dateTextView"
-            android:layout_width="100dp"
+            android:layout_width="50dp"
             android:layout_height="wrap_content"
             android:layout_toRightOf="@id/message_container"
             android:layout_marginLeft="-100dp"
             android:textColor="#d3d3d3"
             android:text="12:30"
-            android:paddingLeft="10dp"
+            android:textSize="8sp"
+            android:paddingLeft="30dp"
             android:layout_alignBottom="@+id/message_container" />
 
     </RelativeLayout>

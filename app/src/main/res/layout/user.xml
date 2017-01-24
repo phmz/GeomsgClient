@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="5dp"
+
+    android:paddingTop="5dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"  android:background="@drawable/rounded_corner_user"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:id="@+id/blank"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/userTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="10dp"
+                android:paddingRight="8dp"
+                android:paddingTop="5dp"
+                android:textStyle="bold"
+                android:textColor="#4682B4"
+                android:text="User1"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/messageTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:paddingLeft="10dp"
+                android:autoLink="web"
+                android:maxWidth="280dp"
+                android:text="Rahul Agrawal is a good boy but he does not know what he wants." />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/dateTextView"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_alignBottom="@id/blank"
+            android:layout_marginLeft="10dp"
+            android:paddingRight="10dp"
+            android:textColor="#d3d3d3"
+            android:gravity="right"
+            android:layout_toRightOf="@id/blank"
+            android:text="17:10" />
+
+        <TextView
+            android:id="@+id/distanceTextView"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:paddingRight="10dp"
+            android:textColor="#d3d3d3"
+            android:paddingBottom="5dp"
+            android:gravity="right"
+            android:text="10 km"
+            android:layout_above="@+id/dateTextView"
+            android:layout_alignLeft="@+id/dateTextView"
+            android:layout_alignStart="@+id/dateTextView" />
+
+    </RelativeLayout>
+
+</RelativeLayout>
