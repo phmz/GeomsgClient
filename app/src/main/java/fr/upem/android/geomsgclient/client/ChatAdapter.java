@@ -31,6 +31,10 @@ public class ChatAdapter extends BaseAdapter {
         private TextView dateTextView;
     }
 
+    private static class MessageHolderDate {
+        private TextView dateTextView;
+    }
+
     private final Context context;
     private ArrayList<Message> messages;
 
@@ -57,17 +61,22 @@ public class ChatAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         Message message = messages.get(position);
-        DateFormat format = new SimpleDateFormat("HH:24");
+        SimpleDateFormat hourFormat = new SimpleDateFormat("HH:mm");
         switch (message.getUserId()) {
             case -1:
                 // DATE CASE
-                if(convertView == null) {
-                    // new view method
-                } else {
-                    // use convertview
-                }
-                // settextview
-                // settimeview
+                SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy");
+                MessageHolderDate holderDate;
+                // if(convertView == null) {
+                // new view method
+                convertView = LayoutInflater.from(context).inflate(R.layout.chat_date, null, false);
+                holderDate = new MessageHolderDate();
+                holderDate.dateTextView = (TextView) convertView.findViewById(R.id.dateTextView);
+                convertView.setTag(holderDate);
+               /* } else {
+                    holderSent = (MessageHolderSent) convertView.getTag();
+                }*/
+                holderDate.dateTextView.setText(dateFormat.format(message.getMessageTime()));
                 break;
             case 0:
                 // SELF CASE;
@@ -83,7 +92,7 @@ public class ChatAdapter extends BaseAdapter {
                     holderSent = (MessageHolderSent) convertView.getTag();
                 }*/
                 holderSent.messageTextView.setText(message.getMessage());
-                holderSent.dateTextView.setText(format.format(message.getMessageTime()));
+                holderSent.dateTextView.setText(hourFormat.format(message.getMessageTime()));
                 break;
             default:
                 // OTHERWISE
@@ -99,7 +108,7 @@ public class ChatAdapter extends BaseAdapter {
                     holderReceived = (MessageHolderReceived) convertView.getTag();
                 }*/
                 holderReceived.messageTextView.setText(message.getMessage());
-                holderReceived.dateTextView.setText(format.format(message.getMessageTime()));
+                holderReceived.dateTextView.setText(hourFormat.format(message.getMessageTime()));
                 break;
         }
         return convertView;

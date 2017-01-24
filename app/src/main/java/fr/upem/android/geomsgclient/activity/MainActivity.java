@@ -10,14 +10,17 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URISyntaxException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -32,7 +35,8 @@ import io.socket.emitter.Emitter;
 public class MainActivity extends AppCompatActivity {
     private Socket socket;
     private EditText messageText;
-    private String serverAdress = "http://geomsgserver.herokuapp.com/";
+    private String serverAddress = "http://geomsgserver.herokuapp.com/";
+    //private String serverAddress = "http://192.168.0.15:3000";
     private Location currentLocation = null;
     private ListView chatListView;
     private ChatAdapter chatAdapter;
@@ -65,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
         messageText = (EditText) findViewById(R.id.messageText);
 
         try {
-            socket = IO.socket(serverAdress);
+            socket = IO.socket(serverAddress);
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
@@ -93,10 +97,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addMessage(String message, int id) {
-        messages.add(new Message(message, MessageStatus.SENT, id, new Date()));
-        if(chatAdapter != null) {
+        Message msgObj = new Message(message, MessageStatus.SENT, id, new Date());
+
+        Log.d("GeomsgClient", msgObj.toString());
+        Log.d("GeomsgClient", msgObj.getMessageTime().toString());
+        if (messages.isEmpty() || !isSameDay(messages.get(messages.size() - 1).getMessageTime(), msgObj.getMessageTime())) {
+            messages.add(new Message("new date", MessageStatus.SENT, -1, new Date()));
+        }
+        messages.add(msgObj);
+        if (chatAdapter != null) {
             chatAdapter.notifyDataSetChanged();
         }
+    }
+
+    private boolean isSameDay(Date date1, Date date2) {
+        SimpleDateFormat sdf = new SimpleDateFormat("ddMMyyyy");
+        return sdf.format(date1).equals(sdf.format(date2));
     }
 
     private void attemptSend(String message) {
@@ -124,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(getApplicationContext(), "You are now connected to " + serverAdress, Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), "You are now connected to " + serverAddress, Toast.LENGTH_LONG).show();
                 }
             });
         }
@@ -136,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(getApplicationContext(), "You are now disconnected from " + serverAdress, Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), "You disconnected from " + serverAddress, Toast.LENGTH_LONG).show();
 
                 }
             });
@@ -162,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     //JSONObject data = (JSONObject) args[0];
-                    addMessage((String)args[0], 1);
+                    addMessage((String) args[0], 1);
                 }
             });
         }
@@ -224,7 +240,17 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onLocationChanged(Location location) {
             currentLocation = location;
-            socket.emit("update loc", "onLocationChanged: " + currentLocation.toString());
+            String jsonString = "{name:'me',latitude:" + currentLocation.getLatitude() + ",longitude:" + currentLocation.getLongitude() + "}";
+            JSONObject jsonObj = null;
+            try {
+                jsonObj = new JSONObject(jsonString);
+                Log.d("GeomsgClient", jsonObj.toString());
+            } catch (JSONException e) {
+                Log.e("GeomsgClient", "Could not parse malformed JSON: \"" + jsonString + "\"");
+                e.printStackTrace();
+            }
+
+            socket.emit("update loc", jsonObj);
         }
 
         @Override

@@ -42,7 +42,7 @@
         app:srcCompat="@mipmap/ic_send"
         android:id="@+id/sendButton"
         android:background="#0000"
-        android:onClick="sendMessage (MainActivity)"
+        android:onClick="sendMessage"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"

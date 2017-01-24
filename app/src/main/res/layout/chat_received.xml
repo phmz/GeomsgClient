@@ -15,7 +15,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true">
+        android:layout_alignParentStart="true"
+        android:background="@drawable/rounded_corner_received">
 
         <LinearLayout
             android:id="@+id/message_container"
@@ -38,8 +39,10 @@
             android:layout_height="wrap_content"
             android:layout_toRightOf="@id/message_container"
             android:layout_marginLeft="-100dp"
+            android:textColor="#d3d3d3"
             android:text="12:30"
-            android:paddingLeft="10dp" />
+            android:paddingLeft="10dp"
+            android:layout_alignBottom="@+id/message_container" />
 
     </RelativeLayout>
 
