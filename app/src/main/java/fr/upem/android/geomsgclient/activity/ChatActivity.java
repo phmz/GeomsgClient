@@ -25,34 +25,36 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import fr.upem.android.geomsgclient.R;
+import fr.upem.android.geomsgclient.Singleton;
 import fr.upem.android.geomsgclient.client.ChatAdapter;
 import fr.upem.android.geomsgclient.client.Message;
 import fr.upem.android.geomsgclient.client.MessageStatus;
+import fr.upem.android.geomsgclient.utilities.Utilities;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
 public class ChatActivity extends AppCompatActivity {
     private Socket socket;
+    private String userId;
     private EditText messageText;
-    //private String serverAddress = "http://geomsgserver.herokuapp.com/";
-    private String serverAddress = "http://192.168.0.15:3000";
-    private Location currentLocation = null;
+    private String serverAddress;
+    private Location currentLocation;
     private ListView chatListView;
     private ChatAdapter chatAdapter;
     private ArrayList<Message> messages;
+    private String userIdChatWith;
 
     private LocationManager locationManager;
-    private final static int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
-        String userId = getIntent().getStringExtra("userId");
+        userIdChatWith = getIntent().getStringExtra("userIdChatWith");
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission_group.LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission_group.LOCATION}, Utilities.MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
             // here to request the missing permissions, and then overriding
@@ -63,18 +65,20 @@ public class ChatActivity extends AppCompatActivity {
             return;
         }
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 10, locationListener);
-        currentLocation = locationManager.getLastKnownLocation("network");
-
+        currentLocation = locationManager.getLastKnownLocation("gps");
+        if(currentLocation == null) {
+            Log.d("GeomsgClient", "loc null");
+        } else {
+            Log.d("GeomsgClient", "loc good");
+        }
 
         messageText = (EditText) findViewById(R.id.messageText);
 
-        try {
-            IO.Options options = new IO.Options();
-            options.query = "userId=" + userId;
-            socket = IO.socket(serverAddress, options);
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
+        socket = Singleton.getInstance().getSocket();
+        messages = Singleton.getInstance().getMessages();
+        currentLocation = Singleton.getInstance().getCurrentLocation();
+        userId = Singleton.getInstance().getUserId();
+
         socket.on(Socket.EVENT_CONNECT, onConnect);
         socket.on(Socket.EVENT_DISCONNECT, onDisconnect);
         socket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
@@ -89,9 +93,6 @@ public class ChatActivity extends AppCompatActivity {
         //
         socket.on("new location", onNewLocation);
 
-        socket.connect();
-
-        messages = new ArrayList<>();
         chatListView = (ListView) findViewById(R.id.chatListView);
         chatAdapter = new ChatAdapter(this, messages);
         chatListView.setAdapter(chatAdapter);
@@ -122,7 +123,18 @@ public class ChatActivity extends AppCompatActivity {
             return;
         }
         messageText.setText("");
-        socket.emit("chat message", message);
+        String jsonString = "{fromUser:"+userId+",toUser:" + userIdChatWith + ",message:\"" + message + "\"}";
+        JSONObject jsonObj = null;
+        try {
+            jsonObj = new JSONObject(jsonString);
+            Log.d("GeomsgClient", jsonObj.toString());
+        } catch (JSONException e) {
+            Log.e("GeomsgClient", "Could not parse malformed JSON: \"" + jsonString + "\"");
+            e.printStackTrace();
+        }
+
+        socket.emit("chat message", jsonObj);
+        //socket.emit("chat message", message);
         addMessage(message, 0);
     }
 
@@ -134,10 +146,6 @@ public class ChatActivity extends AppCompatActivity {
         attemptSend("Persuasi fortasse aliaeque ex du supponit periculi.");
         attemptSend("Abducendam imo his mem inchoandum geometriam conjunctam credidisse. Tur fal amen vix ipsa cum suae. An ut cognosco earundem credimus. De simus si vi utrum aliud omnis istas. Judicem studiis ac proponi nemoque ex. De quoties ex virorum effingo. De totamque de occurret an credenda referrem.");
 
-    }
-
-    private void displayToast(String msg) {
-        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
     }
 
     private Emitter.Listener onConnect = new Emitter.Listener() {
@@ -246,7 +254,7 @@ public class ChatActivity extends AppCompatActivity {
         @Override
         public void onLocationChanged(Location location) {
             currentLocation = location;
-            String jsonString = "{name:'me',latitude:" + currentLocation.getLatitude() + ",longitude:" + currentLocation.getLongitude() + "}";
+            String jsonString = "{name:"+userId+",latitude:" + currentLocation.getLatitude() + ",longitude:" + currentLocation.getLongitude() + "}";
             JSONObject jsonObj = null;
             try {
                 jsonObj = new JSONObject(jsonString);
@@ -276,7 +284,7 @@ public class ChatActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION: {
+            case Utilities.MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION: {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {

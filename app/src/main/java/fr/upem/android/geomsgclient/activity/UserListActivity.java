@@ -11,6 +11,7 @@ import android.widget.ListView;
 import java.util.ArrayList;
 
 import fr.upem.android.geomsgclient.R;
+import fr.upem.android.geomsgclient.Singleton;
 import fr.upem.android.geomsgclient.client.ChatAdapter;
 import fr.upem.android.geomsgclient.client.User;
 import fr.upem.android.geomsgclient.client.UserListAdapter;
@@ -18,17 +19,14 @@ import fr.upem.android.geomsgclient.client.UserListAdapter;
 public class UserListActivity extends AppCompatActivity {
     private ListView userListView;
     private UserListAdapter userListAdapter;
-    private ArrayList<User> users;
     private SwipeRefreshLayout swipeLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_list);
-
-        users = new ArrayList<>();
         userListView = (ListView) findViewById(R.id.userListView);
-        userListAdapter = new UserListAdapter(this, users);
+        userListAdapter = new UserListAdapter(this, Singleton.getInstance().getUsers());
         userListView.setAdapter(userListAdapter);
         userListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -54,7 +52,7 @@ public class UserListActivity extends AppCompatActivity {
 
     private void startChatWithUser(int position) {
         Intent intent = new Intent(this, ChatActivity.class);
-        intent.putExtra("userId", userListAdapter.getItem(position).getUsername());
+        intent.putExtra("userIdChatWith", userListAdapter.getItem(position).getUsername());
         startActivity(intent);
     }
 
@@ -65,7 +63,7 @@ public class UserListActivity extends AppCompatActivity {
 
     private void addUser(String user) {
         User userObj = new User(user, -40., 80.);
-        users.add(userObj);
+        Singleton.getInstance().getUsers().add(userObj);
         if (userListAdapter != null) {
             userListAdapter.notifyDataSetChanged();
         }

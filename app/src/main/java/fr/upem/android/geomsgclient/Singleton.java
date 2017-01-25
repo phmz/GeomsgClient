@@ -21,6 +21,7 @@ public class Singleton {
     private String userId;
     private Location currentLocation;
     private String serverAddress;
+    public final static int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 1;
 
     private Singleton() {
         users = new ArrayList<>();
@@ -42,6 +43,8 @@ public class Singleton {
         this.userId = userId;
         this.currentLocation = currentLocation;
         this.serverAddress = serverAddress;
+        messages = new ArrayList<>();
+        users = new ArrayList<>();
     }
 
     public Socket getSocket() {
