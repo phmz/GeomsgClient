@@ -43,7 +43,7 @@ public class ChatActivity extends AppCompatActivity {
     private ListView chatListView;
     private ChatAdapter chatAdapter;
     private ArrayList<Message> messages;
-    private String userIdChatWith;
+    private String correspondentId;
 
     private LocationManager locationManager;
 
@@ -51,7 +51,7 @@ public class ChatActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
-        userIdChatWith = getIntent().getStringExtra("userIdChatWith");
+        correspondentId = getIntent().getStringExtra("userIdChatWith");
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission_group.LOCATION}, Utilities.MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
@@ -75,7 +75,7 @@ public class ChatActivity extends AppCompatActivity {
         messageText = (EditText) findViewById(R.id.messageText);
 
         socket = Singleton.getInstance().getSocket();
-        messages = Singleton.getInstance().getMessages();
+        messages = Singleton.getInstance().getMessages(correspondentId);
         currentLocation = Singleton.getInstance().getCurrentLocation();
         userId = Singleton.getInstance().getUserId();
 
@@ -123,7 +123,7 @@ public class ChatActivity extends AppCompatActivity {
             return;
         }
         messageText.setText("");
-        String jsonString = "{fromUser:"+userId+",toUser:" + userIdChatWith + ",message:\"" + message + "\"}";
+        String jsonString = "{fromUser:"+userId+",toUser:" + correspondentId + ",message:\"" + message + "\"}";
         JSONObject jsonObj = null;
         try {
             jsonObj = new JSONObject(jsonString);

@@ -4,6 +4,7 @@ import android.app.Application;
 import android.location.Location;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import fr.upem.android.geomsgclient.client.Message;
 import fr.upem.android.geomsgclient.client.User;
@@ -17,15 +18,13 @@ public class Singleton {
     private static Singleton instance = null;
     private Socket socket;
     private ArrayList<User> users;
-    private ArrayList<Message> messages;
+    private HashMap<String, ArrayList<Message>> messages;
     private String userId;
     private Location currentLocation;
     private String serverAddress;
     public final static int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 1;
 
     private Singleton() {
-        users = new ArrayList<>();
-        messages = new ArrayList<>();
     }
 
     public static Singleton getInstance(){
@@ -43,7 +42,7 @@ public class Singleton {
         this.userId = userId;
         this.currentLocation = currentLocation;
         this.serverAddress = serverAddress;
-        messages = new ArrayList<>();
+        messages = new HashMap<>();
         users = new ArrayList<>();
     }
 
@@ -55,8 +54,11 @@ public class Singleton {
         return users;
     }
 
-    public ArrayList<Message> getMessages() {
-        return messages;
+    public ArrayList<Message> getMessages(String correspondentId) {
+        if(messages.get(correspondentId) == null) {
+            messages.put(correspondentId, new ArrayList<Message>());
+        }
+        return messages.get(correspondentId);
     }
 
     public String getUserId() {
