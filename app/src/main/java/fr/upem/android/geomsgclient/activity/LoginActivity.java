@@ -62,7 +62,6 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void onLogin(View v) {
-        nameEditText.setText("MARIO");
         if (nameEditText.getText().toString().trim().isEmpty() || nameEditText == null) {
             createAlertDialog("Name cannot be empty, please try again.");
             return;
@@ -100,8 +99,22 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         socket.emit("update loc", jsonObj);
+        socket.emit("new connection", Singleton.getInstance().getUserId(), newConnectionJson());
         Intent intent = new Intent(this, UserListActivity.class);
         startActivity(intent);
+    }
+
+    private JSONObject newConnectionJson() {
+        String jsonString = "{latitude:" + Singleton.getInstance().getCurrentLocation().getLatitude() + ",longitude:" + Singleton.getInstance().getCurrentLocation().getLongitude() + "}";
+        JSONObject jsonObj = null;
+        try {
+            jsonObj = new JSONObject(jsonString);
+            Log.d("GeomsgClient", jsonObj.toString());
+        } catch (JSONException e) {
+            Log.e("GeomsgClient", "Could not parse malformed JSON: \"" + jsonString + "\"");
+            e.printStackTrace();
+        }
+        return jsonObj;
     }
 
     private Emitter.Listener onConnect = new Emitter.Listener() {
