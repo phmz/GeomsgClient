@@ -35,8 +35,8 @@ public class LoginActivity extends AppCompatActivity {
     private Button loginButton;
     private Location currentLocation = null;
     private Socket socket;
-    //private String serverAddress = "http://geomsgserver.herokuapp.com/";
-    private String serverAddress = "http://192.168.0.15:3000";
+    private String serverAddress = "http://geomsgserver.herokuapp.com/";
+    //private String serverAddress = "http://192.168.0.15:3000";
     private LocationManager locationManager;
 
     @Override
@@ -89,7 +89,7 @@ public class LoginActivity extends AppCompatActivity {
         socket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
         socket.connect();
         Singleton.getInstance().init(socket, userId, currentLocation, serverAddress);
-        String jsonString = "{name:"+ userId +",latitude:" + currentLocation.getLatitude() + ",longitude:" + currentLocation.getLongitude() + "}";
+        String jsonString = "{name:" + userId + ",latitude:" + currentLocation.getLatitude() + ",longitude:" + currentLocation.getLongitude() + "}";
         JSONObject jsonObj = null;
         try {
             jsonObj = new JSONObject(jsonString);
@@ -157,7 +157,18 @@ public class LoginActivity extends AppCompatActivity {
     private final LocationListener locationListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
-            currentLocation = location;
+            Singleton.getInstance().setCurrentLocation(location);
+            String jsonString = "{name:" + Singleton.getInstance().getUserId() + ",latitude:" + Singleton.getInstance().getCurrentLocation().getLatitude() + ",longitude:" + Singleton.getInstance().getCurrentLocation().getLongitude() + "}";
+            JSONObject jsonObj = null;
+            try {
+                jsonObj = new JSONObject(jsonString);
+                Log.d("GeomsgClient", jsonObj.toString());
+            } catch (JSONException e) {
+                Log.e("GeomsgClient", "Could not parse malformed JSON: \"" + jsonString + "\"");
+                e.printStackTrace();
+            }
+
+            socket.emit("update loc", jsonObj);
         }
 
         @Override
@@ -172,4 +183,30 @@ public class LoginActivity extends AppCompatActivity {
         public void onProviderDisabled(String provider) {
         }
     };
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case Utilities.MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+    }
 }

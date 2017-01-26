@@ -45,32 +45,11 @@ public class ChatActivity extends AppCompatActivity {
     private ArrayList<Message> messages;
     private String correspondentId;
 
-    private LocationManager locationManager;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
         correspondentId = getIntent().getStringExtra("userIdChatWith");
-        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission_group.LOCATION}, Utilities.MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 10, locationListener);
-        currentLocation = locationManager.getLastKnownLocation("gps");
-        if(currentLocation == null) {
-            Log.d("GeomsgClient", "loc null");
-        } else {
-            Log.d("GeomsgClient", "loc good");
-        }
 
         messageText = (EditText) findViewById(R.id.messageText);
 
@@ -79,10 +58,7 @@ public class ChatActivity extends AppCompatActivity {
         currentLocation = Singleton.getInstance().getCurrentLocation();
         userId = Singleton.getInstance().getUserId();
 
-        socket.on(Socket.EVENT_CONNECT, onConnect);
-        socket.on(Socket.EVENT_DISCONNECT, onDisconnect);
-        socket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
-        socket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
+
 
         // if we receive a message
         socket.on("chat message", onNewMessage);
@@ -90,8 +66,7 @@ public class ChatActivity extends AppCompatActivity {
         socket.on("typing", onTyping);
         // if we are not typing anymore
         socket.on("stop typing", onStopTyping);
-        //
-        socket.on("new location", onNewLocation);
+
 
         chatListView = (ListView) findViewById(R.id.chatListView);
         chatAdapter = new ChatAdapter(this, messages);
@@ -148,43 +123,6 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
-    private Emitter.Listener onConnect = new Emitter.Listener() {
-        @Override
-        public void call(Object... args) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getApplicationContext(), "You are now connected to " + serverAddress, Toast.LENGTH_LONG).show();
-                }
-            });
-        }
-    };
-
-    private Emitter.Listener onDisconnect = new Emitter.Listener() {
-        @Override
-        public void call(Object... args) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getApplicationContext(), "You disconnected from " + serverAddress, Toast.LENGTH_LONG).show();
-
-                }
-            });
-        }
-    };
-
-    private Emitter.Listener onConnectError = new Emitter.Listener() {
-        @Override
-        public void call(Object... args) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    createAlertDialog("Error: cannot connect");
-                }
-            });
-        }
-    };
-
     private Emitter.Listener onNewMessage = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
@@ -211,19 +149,6 @@ public class ChatActivity extends AppCompatActivity {
         }
     };
 
-    private Emitter.Listener onNewLocation = new Emitter.Listener() {
-        @Override
-        public void call(Object... args) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    // TODO
-                    // inform server that we changed position
-                }
-            });
-        }
-    };
-
     private Emitter.Listener onStopTyping = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
@@ -236,73 +161,4 @@ public class ChatActivity extends AppCompatActivity {
             });
         }
     };
-
-    private void createAlertDialog(String msg) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(msg)
-                .setCancelable(false)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        // nothing
-                    }
-                });
-        AlertDialog alert = builder.create();
-        alert.show();
-    }
-
-    private final LocationListener locationListener = new LocationListener() {
-        @Override
-        public void onLocationChanged(Location location) {
-            currentLocation = location;
-            String jsonString = "{name:"+userId+",latitude:" + currentLocation.getLatitude() + ",longitude:" + currentLocation.getLongitude() + "}";
-            JSONObject jsonObj = null;
-            try {
-                jsonObj = new JSONObject(jsonString);
-                Log.d("GeomsgClient", jsonObj.toString());
-            } catch (JSONException e) {
-                Log.e("GeomsgClient", "Could not parse malformed JSON: \"" + jsonString + "\"");
-                e.printStackTrace();
-            }
-
-            socket.emit("update loc", jsonObj);
-        }
-
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-        }
-    };
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case Utilities.MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
-
-
-                } else {
-
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                }
-                return;
-            }
-
-            // other 'case' lines to check for other
-            // permissions this app might request
-        }
-    }
 }
