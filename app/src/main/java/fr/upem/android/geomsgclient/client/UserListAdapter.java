@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -70,7 +71,7 @@ public class UserListAdapter extends BaseAdapter {
         userHolder.userTextView.setText(user.getUsername());
         userHolder.messageTextView.setText("Serie volui potui iis paulo uno primo nulli est. Liberet effingo im gi quantum id ad facilem.".substring(0, 36));
         userHolder.dateTextView.setText(hourFormat.format(new Date()));
-        userHolder.distanceTextView.setText(Utilities.distanceBetween(user.getLatitude(), user.getLongitude()));
+        userHolder.distanceTextView.setText((new DecimalFormat("##.#").format(user.getDistance())) + " km");
         return convertView;
     }
 }

@@ -6,41 +6,39 @@ package fr.upem.android.geomsgclient.client;
 
 public class User {
     private final String username;
-    private double latitude;
-    private double longitude;
+    private double distance;
 
-    public User(String username, double latitude, double longitude) {
+    public User(String username, double distance) {
         this.username = username;
-        this.latitude = latitude;
-        this.longitude = longitude;
+        this.distance = distance;
     }
 
     public String getUsername() {
         return username;
     }
 
-    public double getLatitude() {
-        return latitude;
+    public double getDistance() {
+        return distance;
     }
 
-    public double getLongitude() {
-        return longitude;
-    }
-
-    public void setLatitude(double latitude) {
-        this.latitude = latitude;
-    }
-
-    public void setLongitude(double longitude) {
-        this.longitude = longitude;
+    public void setDistance(double distance) {
+        this.distance = distance;
     }
 
     @Override
     public String toString() {
         return "User{" +
                 "username='" + username + '\'' +
-                ", latitude=" + latitude +
-                ", longitude=" + longitude +
+                ", distance=" + distance +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof User)) {
+            return false;
+        }
+        User user = (User) obj;
+        return user.username.equals(username);
     }
 }

@@ -35,8 +35,8 @@ public class LoginActivity extends AppCompatActivity {
     private Button loginButton;
     private Location currentLocation = null;
     private Socket socket;
-    private String serverAddress = "http://geomsgserver.herokuapp.com/";
-    //private String serverAddress = "http://192.168.0.15:3000";
+    //private String serverAddress = "http://geomsgserver.herokuapp.com/";
+    private String serverAddress = "http://192.168.0.15:3000";
     private LocationManager locationManager;
 
     @Override
@@ -57,7 +57,7 @@ public class LoginActivity extends AppCompatActivity {
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, locationListener);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100000, 1, locationListener);
         currentLocation = locationManager.getLastKnownLocation("gps");
     }
 
@@ -88,17 +88,7 @@ public class LoginActivity extends AppCompatActivity {
         socket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
         socket.connect();
         Singleton.getInstance().init(socket, userId, currentLocation, serverAddress);
-        String jsonString = "{name:" + userId + ",latitude:" + currentLocation.getLatitude() + ",longitude:" + currentLocation.getLongitude() + "}";
-        JSONObject jsonObj = null;
-        try {
-            jsonObj = new JSONObject(jsonString);
-            Log.d("GeomsgClient", jsonObj.toString());
-        } catch (JSONException e) {
-            Log.e("GeomsgClient", "Could not parse malformed JSON: \"" + jsonString + "\"");
-            e.printStackTrace();
-        }
 
-        socket.emit("update loc", jsonObj);
         socket.emit("new connection", Singleton.getInstance().getUserId(), newConnectionJson());
         Intent intent = new Intent(this, UserListActivity.class);
         startActivity(intent);
