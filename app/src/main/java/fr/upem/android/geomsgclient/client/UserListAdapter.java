@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import fr.upem.android.geomsgclient.R;
-import fr.upem.android.geomsgclient.utilities.Utilities;
+import fr.upem.android.geomsgclient.Singleton;
 
 /**
  * Created by phm on 24/01/2017.
@@ -69,8 +69,16 @@ public class UserListAdapter extends BaseAdapter {
             userHolder = (UserHolder) convertView.getTag();
         }
         userHolder.userTextView.setText(user.getUsername());
-        userHolder.messageTextView.setText("Serie volui potui iis paulo uno primo nulli est. Liberet effingo im gi quantum id ad facilem.".substring(0, 36));
-        userHolder.dateTextView.setText(hourFormat.format(new Date()));
+        ArrayList<Message> messages = Singleton.getInstance().getMessages(user.getUsername());
+        if (messages.isEmpty()) {
+            userHolder.messageTextView.setText("Nothing there yet.");
+            userHolder.dateTextView.setText(hourFormat.format(new Date()));
+        } else {
+            Message message = messages.get(messages.size() - 1);
+            userHolder.messageTextView.setText(message.getMessage());
+            userHolder.dateTextView.setText(hourFormat.format(message.getMessageTime()));
+        }
+
         userHolder.distanceTextView.setText((new DecimalFormat("##.#").format(user.getDistance())) + " km");
         return convertView;
     }

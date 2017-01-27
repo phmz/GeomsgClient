@@ -1,19 +1,13 @@
 package fr.upem.android.geomsgclient.activity;
 
-import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.support.v4.app.ActivityCompat;
+import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -24,7 +18,6 @@ import java.net.URISyntaxException;
 
 import fr.upem.android.geomsgclient.R;
 import fr.upem.android.geomsgclient.Singleton;
-import fr.upem.android.geomsgclient.utilities.Utilities;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
@@ -32,33 +25,15 @@ import io.socket.emitter.Emitter;
 public class LoginActivity extends AppCompatActivity {
 
     private EditText nameEditText;
-    private Button loginButton;
-    private Location currentLocation = null;
     private Socket socket;
     //private String serverAddress = "http://geomsgserver.herokuapp.com/";
     private String serverAddress = "http://192.168.0.15:3000";
-    private LocationManager locationManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         nameEditText = (EditText) findViewById(R.id.nameEditText);
-        loginButton = (Button) findViewById(R.id.loginButton);
-        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, Utilities.MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, locationListener);
-        currentLocation = locationManager.getLastKnownLocation("gps");
     }
 
     public void onLogin(View v) {
@@ -71,10 +46,6 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void login(String userId) {
-        if (currentLocation == null) {
-            createAlertDialog("Could not get your location, please try again.");
-            return;
-        }
         try {
             IO.Options options = new IO.Options();
             options.query = "userId=" + userId;
@@ -87,24 +58,14 @@ public class LoginActivity extends AppCompatActivity {
         socket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
         socket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
         socket.connect();
-        Singleton.getInstance().init(socket, userId, currentLocation, serverAddress);
+        Location location = new Location("dummyprovider");
+        location.setLatitude(2.);
+        location.setLongitude(2.);
+        Singleton.getInstance().init(socket, userId, location, serverAddress);
 
         socket.emit("new connection", Singleton.getInstance().getUserId());
         Intent intent = new Intent(this, UserListActivity.class);
         startActivity(intent);
-    }
-
-    private JSONObject newConnectionJson() {
-        String jsonString = "{latitude:" + Singleton.getInstance().getCurrentLocation().getLatitude() + ",longitude:" + Singleton.getInstance().getCurrentLocation().getLongitude() + "}";
-        JSONObject jsonObj = null;
-        try {
-            jsonObj = new JSONObject(jsonString);
-            Log.d("GeomsgClient", jsonObj.toString());
-        } catch (JSONException e) {
-            Log.e("GeomsgClient", "Could not parse malformed JSON: \"" + jsonString + "\"");
-            e.printStackTrace();
-        }
-        return jsonObj;
     }
 
     private Emitter.Listener onConnect = new Emitter.Listener() {
@@ -155,64 +116,5 @@ public class LoginActivity extends AppCompatActivity {
                 });
         AlertDialog alert = builder.create();
         alert.show();
-    }
-
-    private final LocationListener locationListener = new LocationListener() {
-        @Override
-        public void onLocationChanged(Location location) {
-            Singleton.getInstance().setCurrentLocation(location);
-            String jsonString = "{name:" + Singleton.getInstance().getUserId() + ",latitude:" + Singleton.getInstance().getCurrentLocation().getLatitude() + ",longitude:" + Singleton.getInstance().getCurrentLocation().getLongitude() + "}";
-            JSONObject jsonObj = null;
-            try {
-                jsonObj = new JSONObject(jsonString);
-                Log.d("GeomsgClient", jsonObj.toString());
-            } catch (JSONException e) {
-                Log.e("GeomsgClient", "Could not parse malformed JSON: \"" + jsonString + "\"");
-                e.printStackTrace();
-            }
-
-            socket.emit("update loc", jsonObj);
-        }
-
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-        }
-    };
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case Utilities.MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
-                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-
-                        currentLocation = locationManager.getLastKnownLocation("gps");
-                    }
-
-                } else {
-
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                }
-                return;
-            }
-
-            // other 'case' lines to check for other
-            // permissions this app might request
-        }
     }
 }

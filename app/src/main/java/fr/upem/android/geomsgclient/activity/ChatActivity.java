@@ -1,25 +1,16 @@
 package fr.upem.android.geomsgclient.activity;
 
-import android.Manifest;
-import android.content.DialogInterface;
-import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -29,8 +20,6 @@ import fr.upem.android.geomsgclient.Singleton;
 import fr.upem.android.geomsgclient.client.ChatAdapter;
 import fr.upem.android.geomsgclient.client.Message;
 import fr.upem.android.geomsgclient.client.MessageStatus;
-import fr.upem.android.geomsgclient.utilities.Utilities;
-import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 

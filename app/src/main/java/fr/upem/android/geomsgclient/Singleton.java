@@ -1,6 +1,5 @@
 package fr.upem.android.geomsgclient;
 
-import android.app.Application;
 import android.location.Location;
 
 import java.util.ArrayList;
@@ -41,6 +40,17 @@ public class Singleton {
         this.socket = socket;
         this.userId = userId;
         this.currentLocation = currentLocation;
+        this.serverAddress = serverAddress;
+        messages = new HashMap<>();
+        users = new ArrayList<>();
+    }
+    public void init(Socket socket, String userId,String serverAddress) {
+        if (instance == null) {
+            return;
+        }
+        this.socket = socket;
+        this.userId = userId;
+        this.currentLocation = null;
         this.serverAddress = serverAddress;
         messages = new HashMap<>();
         users = new ArrayList<>();
