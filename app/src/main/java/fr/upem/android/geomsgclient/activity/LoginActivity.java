@@ -57,7 +57,7 @@ public class LoginActivity extends AppCompatActivity {
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100000, 1, locationListener);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, locationListener);
         currentLocation = locationManager.getLastKnownLocation("gps");
     }
 
@@ -89,7 +89,7 @@ public class LoginActivity extends AppCompatActivity {
         socket.connect();
         Singleton.getInstance().init(socket, userId, currentLocation, serverAddress);
 
-        socket.emit("new connection", Singleton.getInstance().getUserId(), newConnectionJson());
+        socket.emit("new connection", Singleton.getInstance().getUserId());
         Intent intent = new Intent(this, UserListActivity.class);
         startActivity(intent);
     }

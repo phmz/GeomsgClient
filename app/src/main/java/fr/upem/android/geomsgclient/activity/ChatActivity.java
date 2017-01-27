@@ -114,12 +114,12 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     public void sendMessage(View v) {
-        /*String msg = messageText.getText().toString().trim();
-        displayToast(msg);
-        attemptSend(msg);*/
-        attemptSend("Serie volui potui iis paulo uno primo nulli est. Liberet effingo im gi quantum id ad facilem.");
-        attemptSend("Persuasi fortasse aliaeque ex du supponit periculi.");
-        attemptSend("Abducendam imo his mem inchoandum geometriam conjunctam credidisse. Tur fal amen vix ipsa cum suae. An ut cognosco earundem credimus. De simus si vi utrum aliud omnis istas. Judicem studiis ac proponi nemoque ex. De quoties ex virorum effingo. De totamque de occurret an credenda referrem.");
+        String msg = messageText.getText().toString().trim();
+        //displayToast(msg);
+        attemptSend(msg);
+        //attemptSend("Serie volui potui iis paulo uno primo nulli est. Liberet effingo im gi quantum id ad facilem.");
+        //attemptSend("Persuasi fortasse aliaeque ex du supponit periculi.");
+        //attemptSend("Abducendam imo his mem inchoandum geometriam conjunctam credidisse. Tur fal amen vix ipsa cum suae. An ut cognosco earundem credimus. De simus si vi utrum aliud omnis istas. Judicem studiis ac proponi nemoque ex. De quoties ex virorum effingo. De totamque de occurret an credenda referrem.");
 
     }
 
@@ -130,7 +130,14 @@ public class ChatActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     //JSONObject data = (JSONObject) args[0];
-                    addMessage((String) args[0], 1);
+                    JSONObject data = (JSONObject) args[0];
+                    try {
+                        String userId = data.getString("userId");
+                        String message = data.getString("message");
+                        addMessage(message, 1);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                 }
             });
         }
