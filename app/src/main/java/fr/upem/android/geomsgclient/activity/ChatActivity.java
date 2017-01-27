@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ListView;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -20,6 +21,7 @@ import fr.upem.android.geomsgclient.Singleton;
 import fr.upem.android.geomsgclient.client.ChatAdapter;
 import fr.upem.android.geomsgclient.client.Message;
 import fr.upem.android.geomsgclient.client.MessageStatus;
+import fr.upem.android.geomsgclient.client.User;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
@@ -48,13 +50,7 @@ public class ChatActivity extends AppCompatActivity {
         userId = Singleton.getInstance().getUserId();
 
 
-
-        // if we receive a message
-        socket.on("chat message", onNewMessage);
-        // if we are typing
-        socket.on("typing", onTyping);
-        // if we are not typing anymore
-        socket.on("stop typing", onStopTyping);
+        Singleton.getInstance().getSocket().on("chat message", onUpdateChat);
 
 
         chatListView = (ListView) findViewById(R.id.chatListView);
@@ -87,7 +83,7 @@ public class ChatActivity extends AppCompatActivity {
             return;
         }
         messageText.setText("");
-        String jsonString = "{fromUser:"+userId+",toUser:" + correspondentId + ",message:\"" + message + "\"}";
+        String jsonString = "{fromUser:" + userId + ",toUser:" + correspondentId + ",message:\"" + message + "\"}";
         JSONObject jsonObj = null;
         try {
             jsonObj = new JSONObject(jsonString);
@@ -112,7 +108,7 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
-    private Emitter.Listener onNewMessage = new Emitter.Listener() {
+    private Emitter.Listener onUpdateChat = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
             runOnUiThread(new Runnable() {
@@ -122,37 +118,18 @@ public class ChatActivity extends AppCompatActivity {
                     JSONObject data = (JSONObject) args[0];
                     try {
                         String userId = data.getString("userId");
-                        String message = data.getString("message");
-                        addMessage(message, 1);
+                        if (userId == null || correspondentId == null) {
+                            return;
+                        }
+                        if (correspondentId.equals(userId)) {
+                            if (chatAdapter != null) {
+                                chatAdapter.notifyDataSetChanged();
+                            }
+                        }
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                }
-            });
-        }
-    };
 
-    private Emitter.Listener onTyping = new Emitter.Listener() {
-        @Override
-        public void call(Object... args) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    // TODO
-                    // inform server that we are typing
-                }
-            });
-        }
-    };
-
-    private Emitter.Listener onStopTyping = new Emitter.Listener() {
-        @Override
-        public void call(Object... args) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    // TODO
-                    // inform server that we are not typing anymore
                 }
             });
         }

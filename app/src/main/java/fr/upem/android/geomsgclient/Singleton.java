@@ -1,11 +1,15 @@
 package fr.upem.android.geomsgclient;
 
 import android.location.Location;
+import android.util.Log;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 
 import fr.upem.android.geomsgclient.client.Message;
+import fr.upem.android.geomsgclient.client.MessageStatus;
 import fr.upem.android.geomsgclient.client.User;
 import io.socket.client.Socket;
 
@@ -85,5 +89,21 @@ public class Singleton {
 
     public void setCurrentLocation(Location currentLocation) {
         this.currentLocation = currentLocation;
+    }
+
+    public void addMessage(String correspondentId, String message, int id) {
+        Message msgObj = new Message(message, MessageStatus.SENT, id, new Date());
+        ArrayList<Message> m = getMessages(correspondentId);
+        Log.d("GeomsgClient", msgObj.toString());
+        Log.d("GeomsgClient", msgObj.getMessageTime().toString());
+        if (m.isEmpty() || !isSameDay(m.get(m.size() - 1).getMessageTime(), msgObj.getMessageTime())) {
+            m.add(new Message("new date", MessageStatus.SENT, -1, new Date()));
+        }
+        m.add(msgObj);
+    }
+
+    private boolean isSameDay(Date date1, Date date2) {
+        SimpleDateFormat sdf = new SimpleDateFormat("ddMMyyyy");
+        return sdf.format(date1).equals(sdf.format(date2));
     }
 }

@@ -44,6 +44,9 @@ public class UserListActivity extends AppCompatActivity {
         // ask server for user list
         // add user that are in range
         // then refreshUserList();
+
+        updateLoc();
+        // Careful here, server crash if location is null
         Singleton.getInstance().getSocket().on("update list", onUpdateList);
         swipeLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
         swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -52,7 +55,13 @@ public class UserListActivity extends AppCompatActivity {
                 refreshUserList();
             }
         });
-        updateLoc();
+
+        // if we receive a message
+        Singleton.getInstance().getSocket().on("chat message", onNewMessage);
+        // if we are typing
+        Singleton.getInstance().getSocket().on("typing", onTyping);
+        // if we are not typing anymore
+        Singleton.getInstance().getSocket().on("stop typing", onStopTyping);
     }
 
     private void updateLoc() {
@@ -127,6 +136,56 @@ public class UserListActivity extends AppCompatActivity {
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
+                }
+            });
+        }
+    };
+
+    private Emitter.Listener onNewMessage = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    //JSONObject data = (JSONObject) args[0];
+                    JSONObject data = (JSONObject) args[0];
+                    refreshUserList();
+                    try {
+                        String userId = data.getString("userId");
+                        String message = data.getString("message");
+                        Singleton.getInstance().addMessage(userId, message, 1);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    if (userListAdapter != null) {
+                        userListAdapter.notifyDataSetChanged();
+                    }
+                }
+            });
+        }
+    };
+
+    private Emitter.Listener onTyping = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    // TODO
+                    // inform server that we are typing
+                }
+            });
+        }
+    };
+
+    private Emitter.Listener onStopTyping = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    // TODO
+                    // inform server that we are not typing anymore
                 }
             });
         }
