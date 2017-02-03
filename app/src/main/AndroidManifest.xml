@@ -20,7 +20,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".activity.ChatActivity" />
-        <activity android:name=".activity.UserListActivity"></activity>
+        <activity android:name=".activity.UserListActivity"
+            android:launchMode="singleInstance"/>
     </application>
 
 </manifest>

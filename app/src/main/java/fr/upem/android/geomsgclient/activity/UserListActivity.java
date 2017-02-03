@@ -1,7 +1,11 @@
 package fr.upem.android.geomsgclient.activity;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -25,7 +29,10 @@ public class UserListActivity extends AppCompatActivity {
     private ListView userListView;
     private UserListAdapter userListAdapter;
     private SwipeRefreshLayout swipeLayout;
+    private NotificationCompat.Builder mBuilder;
+    private int notifCounter = 0;
 
+    private final static String GROUP_KEY_NOTIF = "GROUP_KEY_NOTIF";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +69,9 @@ public class UserListActivity extends AppCompatActivity {
         Singleton.getInstance().getSocket().on("typing", onTyping);
         // if we are not typing anymore
         Singleton.getInstance().getSocket().on("stop typing", onStopTyping);
+
+        mBuilder = new NotificationCompat.Builder(this)
+                .setSmallIcon(R.drawable.ic_stat_name);
     }
 
     private void updateLoc() {
@@ -79,6 +89,7 @@ public class UserListActivity extends AppCompatActivity {
     }
 
     private void startChatWithUser(int position) {
+        notifCounter = 0;
         Intent intent = new Intent(this, ChatActivity.class);
         intent.putExtra("userIdChatWith", userListAdapter.getItem(position).getUsername());
         startActivity(intent);
@@ -153,6 +164,41 @@ public class UserListActivity extends AppCompatActivity {
                     try {
                         String userId = data.getString("userId");
                         String message = data.getString("message");
+                        // Because clicking the notification opens a new ("special") activity, there's
+                        // no need to create an artificial back stack.
+                        Intent resultIntent;
+
+                        if (notifCounter == 0) {
+                            notifCounter++;
+                            resultIntent = new Intent(UserListActivity.this, ChatActivity.class);
+                            resultIntent.putExtra("userIdChatWith", userId);
+                            mBuilder.setContentTitle(userId)
+                                    .setContentText(message)
+                                    .setAutoCancel(true)
+                                    .setVibrate(new long[]{1000, 1000})
+                                    .setGroup(GROUP_KEY_NOTIF)
+                                    .setSound(Settings.System.DEFAULT_NOTIFICATION_URI);
+                        } else {
+                            notifCounter++;
+                            resultIntent = new Intent(UserListActivity.this, UserListActivity.class);
+                            NotificationCompat.InboxStyle notificationStyle = new NotificationCompat.InboxStyle();
+                            mBuilder.setContentTitle(notifCounter + " new messages")
+                                    .setStyle(notificationStyle.setBigContentTitle(notifCounter + " new messages"))
+                                    .setContentText("");
+                        }
+                        PendingIntent resultPendingIntent = PendingIntent.getActivity(
+                                UserListActivity.this,
+                                0,
+                                resultIntent,
+                                PendingIntent.FLAG_UPDATE_CURRENT);
+                        mBuilder.setContentIntent(resultPendingIntent);
+                        // Sets an ID for the notification
+                        int mNotificationId = 001;
+                        // Gets an instance of the NotificationManager service
+                        NotificationManager mNotifyMgr =
+                                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                        // Builds the notification and issues it.
+                        mNotifyMgr.notify(mNotificationId, mBuilder.build());
                         Singleton.getInstance().addMessage(userId, message, 1);
                     } catch (JSONException e) {
                         e.printStackTrace();
