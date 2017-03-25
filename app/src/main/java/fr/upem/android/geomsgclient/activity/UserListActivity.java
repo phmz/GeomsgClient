@@ -94,11 +94,12 @@ public class UserListActivity extends AppCompatActivity implements LocationListe
 
     @Override
     public void onLocationChanged(final Location location) {
+        Singleton.getInstance().setCurrentLocation(location);
         lat = location.getLatitude();
         lon = location.getLongitude();
         final StringBuilder msg = new StringBuilder("lat : ");
         msg.append(lat);
-        msg.append("; lng : ");
+        msg.append(" lng : ");
         msg.append(lon);
 
         //afficher la position
@@ -165,8 +166,12 @@ public class UserListActivity extends AppCompatActivity implements LocationListe
                 // for ActivityCompat#requestPermissions for more details.
                 return;
             }
+            // TODO REQUEST UPDATE LOCATION LESS OFTEN
+            //lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60000, 0, this);
             lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 0, this);
         }
+        // TODO REQUEST UPDATE LOCATION LESS OFTEN
+        //lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60000, 0, this);
         lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10000, 0,this);
     }
 
