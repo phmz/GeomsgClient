@@ -1,10 +1,16 @@
 package fr.upem.android.geomsgclient.activity;
 
+import android.Manifest;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -12,6 +18,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -25,12 +32,17 @@ import fr.upem.android.geomsgclient.client.User;
 import fr.upem.android.geomsgclient.client.UserListAdapter;
 import io.socket.emitter.Emitter;
 
-public class UserListActivity extends AppCompatActivity {
+public class UserListActivity extends AppCompatActivity implements LocationListener {
     private ListView userListView;
     private UserListAdapter userListAdapter;
     private SwipeRefreshLayout swipeLayout;
     private NotificationCompat.Builder mBuilder;
     private int notifCounter = 0;
+
+    /*localisation*/
+    private LocationManager lm;
+    private double lat;
+    private double lon;
 
     private final static String GROUP_KEY_NOTIF = "GROUP_KEY_NOTIF";
 
@@ -74,6 +86,41 @@ public class UserListActivity extends AppCompatActivity {
                 .setSmallIcon(R.drawable.ic_stat_name);
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        lm.removeUpdates(this);
+    }
+
+    @Override
+    public void onLocationChanged(final Location location) {
+        lat = location.getLatitude();
+        lon = location.getLongitude();
+        final StringBuilder msg = new StringBuilder("lat : ");
+        msg.append(lat);
+        msg.append("; lng : ");
+        msg.append(lon);
+
+        //afficher la position
+        Toast.makeText(this, msg.toString(), Toast.LENGTH_SHORT).show();
+        updateLoc();
+    }
+
+    @Override
+    public void onProviderDisabled(final String provider) {
+        //do nothing
+    }
+
+    @Override
+    public void onProviderEnabled(final String provider) {
+        //do nothing
+    }
+
+    @Override
+    public void onStatusChanged(final String provider, final int status, final Bundle extras) {
+        //do nothing
+    }
+
     private void updateLoc() {
         String jsonString = "{name:" + Singleton.getInstance().getUserId() + ",latitude:" + Singleton.getInstance().getCurrentLocation().getLatitude() + ",longitude:" + Singleton.getInstance().getCurrentLocation().getLongitude() + "}";
         JSONObject jsonObj = null;
@@ -104,6 +151,23 @@ public class UserListActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
         refreshUserList();
+
+        //GPS
+        lm = (LocationManager) this.getSystemService(LOCATION_SERVICE);
+        if (lm.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 0, this);
+        }
+        lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10000, 0,this);
     }
 
     private void addUser(User userObj) {

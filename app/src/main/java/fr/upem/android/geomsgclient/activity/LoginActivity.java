@@ -37,8 +37,8 @@ public class LoginActivity extends AppCompatActivity {
     private EditText username;
     private EditText password;
     private Socket socket;
-    //private String serverAddress = "http://geomsgserver.herokuapp.com/";
-    private String serverAddress = "http://192.168.0.11:3000";
+    private String serverAddress = "http://geomsgserver.herokuapp.com/";
+    //private String serverAddress = "http://192.168.0.11:3000";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
