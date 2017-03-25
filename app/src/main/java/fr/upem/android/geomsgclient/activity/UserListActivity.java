@@ -41,8 +41,6 @@ public class UserListActivity extends AppCompatActivity implements LocationListe
 
     /*localisation*/
     private LocationManager lm;
-    private double lat;
-    private double lon;
 
     private final static String GROUP_KEY_NOTIF = "GROUP_KEY_NOTIF";
 
@@ -95,12 +93,10 @@ public class UserListActivity extends AppCompatActivity implements LocationListe
     @Override
     public void onLocationChanged(final Location location) {
         Singleton.getInstance().setCurrentLocation(location);
-        lat = location.getLatitude();
-        lon = location.getLongitude();
         final StringBuilder msg = new StringBuilder("lat : ");
-        msg.append(lat);
+        msg.append(location.getLatitude());
         msg.append(" lng : ");
-        msg.append(lon);
+        msg.append(location.getLongitude());
 
         //afficher la position
         Toast.makeText(this, msg.toString(), Toast.LENGTH_SHORT).show();
@@ -168,11 +164,11 @@ public class UserListActivity extends AppCompatActivity implements LocationListe
             }
             // TODO REQUEST UPDATE LOCATION LESS OFTEN
             //lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60000, 0, this);
-            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 0, this);
+            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60000, 0, this);
         }
         // TODO REQUEST UPDATE LOCATION LESS OFTEN
         //lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60000, 0, this);
-        lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10000, 0,this);
+        lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 60000, 0,this);
     }
 
     private void addUser(User userObj) {
