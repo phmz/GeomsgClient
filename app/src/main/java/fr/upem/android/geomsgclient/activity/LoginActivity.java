@@ -239,15 +239,16 @@ public class LoginActivity extends AppCompatActivity {
     private void register(){
         if(isEmailValid(username.getText().toString()) && isPasswordValid(password.getText().toString())){
             socket.emit("register", username.getText().toString(), password.getText().toString());
+            if(Singleton.getInstance().getRegister()){
+                login(username.getText().toString());
+            }else{
+                createAlertDialog("email already registered");
+            }
 
         }else{
             createAlertDialog("invalid email or password");
         }
-        if(Singleton.getInstance().getRegister()){
-            login(username.getText().toString());
-        }else{
-            createAlertDialog("email already registered");
-        }
+
 
     }
 }
