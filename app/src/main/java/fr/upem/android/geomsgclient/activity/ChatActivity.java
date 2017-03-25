@@ -58,6 +58,8 @@ public class ChatActivity extends AppCompatActivity {
         chatListView.setAdapter(chatAdapter);
 
     }
+    
+    //methode
 
     private void addMessage(String message, int id) {
         Message msgObj = new Message(message, MessageStatus.SENT, id, new Date());
