@@ -123,17 +123,60 @@ public class LoginActivity extends AppCompatActivity {
         socket.on(Socket.EVENT_DISCONNECT, onDisconnect);
         socket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
         socket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
+        socket.on("connection_val", onConnected);
+        socket.on("register_val", onRegistered);
         socket.connect();
         Location location = new Location("dummyprovider");
         location.setLatitude(2.);
         location.setLongitude(2.);
         Singleton.getInstance().init(socket, userId, location, serverAddress);
 
-        //TODO : si login ok coté serveur ( mdp ok et user ok) alors continue
         socket.emit("new connection", userId, password.getText().toString());
-        Intent intent = new Intent(this, UserListActivity.class);
-        startActivity(intent);
+        if(Singleton.getInstance().getLogin()) {
+            Intent intent = new Intent(this, UserListActivity.class);
+            startActivity(intent);
+        }else{
+            createAlertDialog("invalid email or password");
+        }
     }
+
+
+    private Emitter.Listener onConnected = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    JSONObject data = (JSONObject) args[0];
+                    try {
+                        Singleton.getInstance().setLogin(data.getBoolean("connected"));
+                    } catch (JSONException e) {
+                        createAlertDialog("Login error");
+                    }
+
+
+                }
+            });
+        }
+    };
+
+    private Emitter.Listener onRegistered = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    JSONObject data = (JSONObject) args[0];
+                    try {
+                        Singleton.getInstance().setRegister(data.getBoolean("registered"));
+                    } catch (JSONException e) {
+                        createAlertDialog("register error");
+                    }
+
+                }
+            });
+        }
+    };
 
     private Emitter.Listener onConnect = new Emitter.Listener() {
         @Override
@@ -195,8 +238,16 @@ public class LoginActivity extends AppCompatActivity {
 
     private void register(){
         if(isEmailValid(username.getText().toString()) && isPasswordValid(password.getText().toString())){
-            //TODO : try add user to serveur then connect
+            socket.emit("register", username.getText().toString(), password.getText().toString());
+
+        }else{
+            createAlertDialog("invalid email or password");
         }
-        login(username.getText().toString());
+        if(Singleton.getInstance().getRegister()){
+            login(username.getText().toString());
+        }else{
+            createAlertDialog("email already registered");
+        }
+
     }
 }
