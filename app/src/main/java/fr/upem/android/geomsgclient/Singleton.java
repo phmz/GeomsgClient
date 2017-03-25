@@ -23,8 +23,8 @@ public class Singleton {
     private ArrayList<User> users;
     private HashMap<String, ArrayList<Message>> messages;
     private String userId;
-    private boolean register;
-    private boolean login;
+    private boolean register = false;
+    private boolean login = false;
     private Location currentLocation;
     private String serverAddress;
     public final static int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 1;

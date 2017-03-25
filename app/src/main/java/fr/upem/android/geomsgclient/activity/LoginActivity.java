@@ -133,7 +133,7 @@ public class LoginActivity extends AppCompatActivity {
         location.setLongitude(2.);
         Singleton.getInstance().init(socket, userId, location, serverAddress);
 
-        String jsonString = "{ username:" + username + ", password:" + password + "}";
+        String jsonString = "{ username:" + username.getText().toString() + ", password:" + password.getText().toString() + "}";
         JSONObject jsonObj = null;
         try {
             jsonObj = new JSONObject(jsonString);
@@ -161,6 +161,7 @@ public class LoginActivity extends AppCompatActivity {
                     JSONObject data = (JSONObject) args[0];
                     try {
                         Singleton.getInstance().setLogin(data.getBoolean("connected"));
+                        System.out.println("connected : " + data.getBoolean("connected"));
                     } catch (JSONException e) {
                         createAlertDialog("Login error");
                     }
@@ -180,6 +181,7 @@ public class LoginActivity extends AppCompatActivity {
                     JSONObject data = (JSONObject) args[0];
                     try {
                         Singleton.getInstance().setRegister(data.getBoolean("registered"));
+                        System.out.println("registered : " + data.getBoolean("registered"));
                     } catch (JSONException e) {
                         createAlertDialog("register error");
                     }
@@ -249,11 +251,12 @@ public class LoginActivity extends AppCompatActivity {
 
     private void register() {
         if (isPasswordValid(password.getText().toString())) {
-            String jsonString = "{ username:" + username + ", password:" + password + "}";
+            String jsonString = "{ username:" + username.getText().toString() + ", password:" + password.getText().toString() + "}";
             JSONObject jsonObj = null;
             try {
                 jsonObj = new JSONObject(jsonString);
                 socket.emit("register", jsonObj);
+
                 if (Singleton.getInstance().getRegister()) {
                     login(username.getText().toString());
                 } else {
