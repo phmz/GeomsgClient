@@ -133,13 +133,22 @@ public class LoginActivity extends AppCompatActivity {
         location.setLongitude(2.);
         Singleton.getInstance().init(socket, userId, location, serverAddress);
 
-        socket.emit("new connection", userId, password.getText().toString());
-        if(Singleton.getInstance().getLogin()) {
-            Intent intent = new Intent(this, UserListActivity.class);
-            startActivity(intent);
-        }else{
-            createAlertDialog("invalid email or password");
+        String jsonString = "{ username:"+username+", password:"+password+"}";
+        JSONObject jsonObj = null;
+        try {
+            jsonObj = new JSONObject(jsonString);
+            socket.emit("new connection", userId, password.getText().toString());
+            if(Singleton.getInstance().getLogin()) {
+                Intent intent = new Intent(this, UserListActivity.class);
+                startActivity(intent);
+            }else{
+                createAlertDialog("invalid email or password");
+            }
+        } catch (JSONException e) {
+            Log.e("GeomsgClient", "Could not parse malformed JSON: \"" + jsonString + "\"");
+            e.printStackTrace();
         }
+
     }
 
 
@@ -239,18 +248,25 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void register(){
-        if(isEmailValid(username.getText().toString()) && isPasswordValid(password.getText().toString())){
-            socket.emit("register", username.getText().toString(), password.getText().toString());
-            if(Singleton.getInstance().getRegister()){
-                login(username.getText().toString());
-            }else{
-                createAlertDialog("email already registered");
+        if(isPasswordValid(password.getText().toString())){
+            String jsonString = "{ username:"+username+", password:"+password+"}";
+            JSONObject jsonObj = null;
+            try {
+                jsonObj = new JSONObject(jsonString);
+                socket.emit("register", jsonObj);
+                if(Singleton.getInstance().getRegister()){
+                    login(username.getText().toString());
+                }else{
+                    createAlertDialog("email already registered");
+                }
+            } catch (JSONException e) {
+                Log.e("GeomsgClient", "Could not parse malformed JSON: \"" + jsonString + "\"");
+                e.printStackTrace();
             }
+
+
 
         }else{
             createAlertDialog("invalid email or password");
         }
-
-
     }
-}
