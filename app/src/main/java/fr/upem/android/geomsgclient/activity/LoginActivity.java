@@ -2,12 +2,15 @@ package fr.upem.android.geomsgclient.activity;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -24,7 +27,15 @@ import io.socket.emitter.Emitter;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private EditText nameEditText;
+    private CheckBox save_login_checkBox;
+    private SharedPreferences login_preferences;
+    private SharedPreferences.Editor login_prefs_editor;
+    private Boolean saveLogin;
+    Button login_button;
+    Button register_button;
+
+    private EditText username;
+    private EditText password;
     private Socket socket;
     //private String serverAddress = "http://geomsgserver.herokuapp.com/";
     private String serverAddress = "http://192.168.0.11:3000";
@@ -33,16 +44,71 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        nameEditText = (EditText) findViewById(R.id.nameEditText);
+
+
+        username = (EditText) findViewById(R.id.email);
+        password = (EditText) findViewById(R.id.password);
+
+        login_button = (Button) findViewById(R.id.loginButton);
+        register_button = (Button) findViewById(R.id.registerButton);
+        save_login_checkBox = (CheckBox) findViewById(R.id.saveCheckBox);
+
+        login_preferences = getSharedPreferences("loginPrefs", MODE_PRIVATE);
+        login_prefs_editor = login_preferences.edit();
+        saveLogin = login_preferences.getBoolean("saveLogin", false);
+
+        if (saveLogin == true) {
+            username.setText(login_preferences.getString("username", ""));
+            password.setText(login_preferences.getString("password", ""));
+            save_login_checkBox.setChecked(true);
+        }
+
+        login_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onLogin(v);
+            }
+        });
+        register_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onRegister(v);
+            }
+        });
     }
 
     public void onLogin(View v) {
-        if (nameEditText.getText().toString().trim().isEmpty() || nameEditText == null) {
+        if (username.getText().toString().trim().isEmpty() || username == null) {
             createAlertDialog("Name cannot be empty, please try again.");
             return;
         }
-        login(nameEditText.getText().toString().trim());
+        if (save_login_checkBox.isChecked()) {
+            login_prefs_editor.putBoolean("saveLogin", true);
+            login_prefs_editor.putString("username", username.toString());
+            login_prefs_editor.putString("password", password.toString());
+            login_prefs_editor.commit();
+        } else {
+            login_prefs_editor.clear();
+            login_prefs_editor.commit();
+        }
+        login(username.getText().toString().trim());
+    }
 
+    public void onRegister(View v){
+        if (username.getText().toString().trim().isEmpty() || username == null) {
+            createAlertDialog("Name cannot be empty, please try again.");
+            return;
+        }
+        if (save_login_checkBox.isChecked()) {
+            login_prefs_editor.putBoolean("saveLogin", true);
+            login_prefs_editor.putString("username", username.toString());
+            login_prefs_editor.putString("password", password.toString());
+            login_prefs_editor.commit();
+        } else {
+            login_prefs_editor.clear();
+            login_prefs_editor.commit();
+        }
+        register();
     }
 
     private void login(String userId) {
@@ -63,7 +129,7 @@ public class LoginActivity extends AppCompatActivity {
         location.setLongitude(2.);
         Singleton.getInstance().init(socket, userId, location, serverAddress);
 
-        socket.emit("new connection", Singleton.getInstance().getUserId());
+        socket.emit("new connection", userId, password.getText().toString());
         Intent intent = new Intent(this, UserListActivity.class);
         startActivity(intent);
     }
@@ -116,5 +182,20 @@ public class LoginActivity extends AppCompatActivity {
                 });
         AlertDialog alert = builder.create();
         alert.show();
+    }
+
+    private boolean isEmailValid(String email) {
+        return (email.matches("[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+"));
+    }
+
+    private boolean isPasswordValid(String password) {
+        return password.length() > 4;
+    }
+
+    private void register(){
+        if(isEmailValid(username.getText().toString()) && isPasswordValid(password.getText().toString())){
+            //TODO : try add user to serveur then connect
+        }
+        login(username.getText().toString());
     }
 }

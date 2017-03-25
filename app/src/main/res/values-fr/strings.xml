@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">GeomsgClient</string>
+    <string name="action_sign_in">Connexion</string>
+    <string name="action_sign_in_short">Connexion</string>
+    <string name="error_field_required">champs requis</string>
+    <string name="error_invalid_email">adresse mail invalide</string>
+    <string name="error_invalid_password">Mot de passe trop petit</string>
+    <string name="permission_rationale">Acces à la liste de contact requis pour l\'autocompletion</string>
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Mot de passe</string>
+    <string name="title_activity_register">Inscription</string>
+    <string name="action_sign_up">Inscription</string>
+    <string name="action_sign_up_short">Inscription</string>
+    <string name="title_activity_login">Connexion</string>
+    <string name="save_data">se souvenir de moi</string>
+</resources>
