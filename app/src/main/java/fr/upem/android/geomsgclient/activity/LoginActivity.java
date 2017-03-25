@@ -129,6 +129,7 @@ public class LoginActivity extends AppCompatActivity {
         location.setLongitude(2.);
         Singleton.getInstance().init(socket, userId, location, serverAddress);
 
+        //TODO : si login ok coté serveur ( mdp ok et user ok) alors continue
         socket.emit("new connection", userId, password.getText().toString());
         Intent intent = new Intent(this, UserListActivity.class);
         startActivity(intent);
