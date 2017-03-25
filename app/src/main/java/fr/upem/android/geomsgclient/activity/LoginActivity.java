@@ -114,6 +114,22 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void login(String userId) {
+        connectServeur(userId);
+
+        String jsonString = "{ username:" + username.getText().toString() + ", password:" + password.getText().toString() + "}";
+        JSONObject jsonObj = null;
+        try {
+            jsonObj = new JSONObject(jsonString);
+            socket.emit("new connection", userId, password.getText().toString());
+
+        } catch (JSONException e) {
+            Log.e("GeomsgClient", "Could not parse malformed JSON: \"" + jsonString + "\"");
+            e.printStackTrace();
+        }
+
+    }
+
+    private void connectServeur(String userId) {
         try {
             IO.Options options = new IO.Options();
             options.query = "userId=" + userId;
@@ -132,23 +148,6 @@ public class LoginActivity extends AppCompatActivity {
         location.setLatitude(2.);
         location.setLongitude(2.);
         Singleton.getInstance().init(socket, userId, location, serverAddress);
-
-        String jsonString = "{ username:" + username.getText().toString() + ", password:" + password.getText().toString() + "}";
-        JSONObject jsonObj = null;
-        try {
-            jsonObj = new JSONObject(jsonString);
-            socket.emit("new connection", userId, password.getText().toString());
-            if (Singleton.getInstance().getLogin()) {
-                Intent intent = new Intent(this, UserListActivity.class);
-                startActivity(intent);
-            } else {
-                createAlertDialog("invalid email or password");
-            }
-        } catch (JSONException e) {
-            Log.e("GeomsgClient", "Could not parse malformed JSON: \"" + jsonString + "\"");
-            e.printStackTrace();
-        }
-
     }
 
 
@@ -160,8 +159,12 @@ public class LoginActivity extends AppCompatActivity {
                 public void run() {
                     JSONObject data = (JSONObject) args[0];
                     try {
-                        Singleton.getInstance().setLogin(data.getBoolean("connected"));
-                        System.out.println("connected : " + data.getBoolean("connected"));
+                       if(data.getBoolean("connected")){
+                           changeActivity();
+                       }
+                       else{
+                           createAlertDialog("invalid email or password2");
+                       }
                     } catch (JSONException e) {
                         createAlertDialog("Login error");
                     }
@@ -172,6 +175,11 @@ public class LoginActivity extends AppCompatActivity {
         }
     };
 
+    private void changeActivity(){
+        Intent intent = new Intent(this, UserListActivity.class);
+        startActivity(intent);
+    }
+
     private Emitter.Listener onRegistered = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
@@ -180,8 +188,20 @@ public class LoginActivity extends AppCompatActivity {
                 public void run() {
                     JSONObject data = (JSONObject) args[0];
                     try {
-                        Singleton.getInstance().setRegister(data.getBoolean("registered"));
-                        System.out.println("registered : " + data.getBoolean("registered"));
+                       if(data.getBoolean("registered")){
+                           String jsonString = "{ username:" + username.getText().toString() + ", password:" + password.getText().toString() + "}";
+                           JSONObject jsonObj = null;
+                           try {
+                               jsonObj = new JSONObject(jsonString);
+                               socket.emit("new connection", jsonObj);
+
+                           } catch (JSONException e) {
+                               Log.e("GeomsgClient", "Could not parse malformed JSON: \"" + jsonString + "\"");
+                               e.printStackTrace();
+                           }
+                       } else {
+                           createAlertDialog("email already registered");
+                       }
                     } catch (JSONException e) {
                         createAlertDialog("register error");
                     }
@@ -250,6 +270,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void register() {
+        connectServeur(username.getText().toString());
         if (isPasswordValid(password.getText().toString())) {
             String jsonString = "{ username:" + username.getText().toString() + ", password:" + password.getText().toString() + "}";
             JSONObject jsonObj = null;
@@ -257,17 +278,11 @@ public class LoginActivity extends AppCompatActivity {
                 jsonObj = new JSONObject(jsonString);
                 socket.emit("register", jsonObj);
 
-                if (Singleton.getInstance().getRegister()) {
-                    login(username.getText().toString());
-                } else {
-                    createAlertDialog("email already registered");
-                }
+
             } catch (JSONException e) {
                 Log.e("GeomsgClient", "Could not parse malformed JSON: \"" + jsonString + "\"");
                 e.printStackTrace();
             }
-
-
         } else {
             createAlertDialog("invalid email or password");
         }

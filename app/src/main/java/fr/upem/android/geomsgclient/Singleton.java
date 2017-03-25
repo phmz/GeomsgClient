@@ -23,8 +23,7 @@ public class Singleton {
     private ArrayList<User> users;
     private HashMap<String, ArrayList<Message>> messages;
     private String userId;
-    private boolean register = false;
-    private boolean login = false;
+
     private Location currentLocation;
     private String serverAddress;
     public final static int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 1;
@@ -93,17 +92,6 @@ public class Singleton {
         this.currentLocation = currentLocation;
     }
 
-    public void setLogin(boolean b){
-        login = b;
-    }
-
-    public boolean getLogin(){ return login;}
-
-    public void setRegister(boolean b){
-        login = b;
-    }
-
-    public boolean getRegister(){ return register;}
 
     public void addMessage(String correspondentId, String message, int id) {
         Message msgObj = new Message(message, MessageStatus.SENT, id, new Date());
