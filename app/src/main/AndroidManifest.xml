@@ -24,10 +24,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activity.ChatActivity" />
+        <activity android:name=".activity.ChatActivity"
+            android:launchMode="singleInstance"/>
         <activity
             android:name=".activity.UserListActivity"
-            android:launchMode="singleInstance" />
+            android:launchMode="singleTop" />
     </application>
 
 </manifest>

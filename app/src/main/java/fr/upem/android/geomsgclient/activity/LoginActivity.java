@@ -162,6 +162,7 @@ public class LoginActivity extends AppCompatActivity {
                     try {
                         if(data.getBoolean("connected")){
                             changeActivity();
+                            LoginActivity.this.finish();
                         }
                         else{
                             createAlertDialog("invalid email or password");
