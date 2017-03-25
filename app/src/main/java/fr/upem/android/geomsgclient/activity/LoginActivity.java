@@ -25,6 +25,8 @@ import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
+import static android.content.Context.MODE_PRIVATE;
+
 public class LoginActivity extends AppCompatActivity {
 
     private CheckBox save_login_checkBox;
