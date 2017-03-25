@@ -96,7 +96,7 @@ public class LoginActivity extends AppCompatActivity {
         login(username.getText().toString().trim());
     }
 
-    public void onRegister(View v){
+    public void onRegister(View v) {
         if (username.getText().toString().trim().isEmpty() || username == null) {
             createAlertDialog("Name cannot be empty, please try again.");
             return;
@@ -133,15 +133,15 @@ public class LoginActivity extends AppCompatActivity {
         location.setLongitude(2.);
         Singleton.getInstance().init(socket, userId, location, serverAddress);
 
-        String jsonString = "{ username:"+username+", password:"+password+"}";
+        String jsonString = "{ username:" + username + ", password:" + password + "}";
         JSONObject jsonObj = null;
         try {
             jsonObj = new JSONObject(jsonString);
             socket.emit("new connection", userId, password.getText().toString());
-            if(Singleton.getInstance().getLogin()) {
+            if (Singleton.getInstance().getLogin()) {
                 Intent intent = new Intent(this, UserListActivity.class);
                 startActivity(intent);
-            }else{
+            } else {
                 createAlertDialog("invalid email or password");
             }
         } catch (JSONException e) {
@@ -247,16 +247,16 @@ public class LoginActivity extends AppCompatActivity {
         return password.length() > 4;
     }
 
-    private void register(){
-        if(isPasswordValid(password.getText().toString())){
-            String jsonString = "{ username:"+username+", password:"+password+"}";
+    private void register() {
+        if (isPasswordValid(password.getText().toString())) {
+            String jsonString = "{ username:" + username + ", password:" + password + "}";
             JSONObject jsonObj = null;
             try {
                 jsonObj = new JSONObject(jsonString);
                 socket.emit("register", jsonObj);
-                if(Singleton.getInstance().getRegister()){
+                if (Singleton.getInstance().getRegister()) {
                     login(username.getText().toString());
-                }else{
+                } else {
                     createAlertDialog("email already registered");
                 }
             } catch (JSONException e) {
@@ -265,8 +265,8 @@ public class LoginActivity extends AppCompatActivity {
             }
 
 
-
-        }else{
+        } else {
             createAlertDialog("invalid email or password");
         }
     }
+}
