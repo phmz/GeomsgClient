@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -22,11 +23,8 @@ import java.net.URISyntaxException;
 import fr.upem.android.geomsgclient.R;
 import fr.upem.android.geomsgclient.Singleton;
 import io.socket.client.IO;
-import io.socket.client.Manager;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
-
-import static android.content.Context.MODE_PRIVATE;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -34,13 +32,13 @@ public class LoginActivity extends AppCompatActivity {
     private SharedPreferences login_preferences;
     private SharedPreferences.Editor login_prefs_editor;
     private Boolean saveLogin;
-    Button login_button;
-    Button register_button;
+    private Button login_button;
+    private Button register_button;
     private EditText username;
     private EditText password;
     private Socket socket;
-    //private String serverAddress = "http://geomsgserver.herokuapp.com/";
-    private String serverAddress = "http://192.168.0.11:3000";
+    private String serverAddress = "http://geomsgserver.herokuapp.com/";
+    //private String serverAddress = "http://192.168.0.11:3000";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,14 +50,13 @@ public class LoginActivity extends AppCompatActivity {
         login_button = (Button) findViewById(R.id.loginButton);
         register_button = (Button) findViewById(R.id.registerButton);
         save_login_checkBox = (CheckBox) findViewById(R.id.saveCheckBox);
-
         login_preferences = getSharedPreferences("loginPrefs", MODE_PRIVATE);
         login_prefs_editor = login_preferences.edit();
         saveLogin = login_preferences.getBoolean("saveLogin", false);
 
-        if (saveLogin == true) {
-            username.setText(login_preferences.getString("username", ""));
-            password.setText(login_preferences.getString("password", ""));
+        if (saveLogin) {
+            username.setText(login_preferences.getString("username", ""), TextView.BufferType.EDITABLE);
+            password.setText(login_preferences.getString("password", ""), TextView.BufferType.EDITABLE);
             save_login_checkBox.setChecked(true);
         }
 
@@ -76,7 +73,6 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
         if(Singleton.getInstance().getUserId() != null){
-            System.out.println("Skip LoginActivity");
             changeActivity();
             LoginActivity.this.finish();
         }
@@ -87,17 +83,15 @@ public class LoginActivity extends AppCompatActivity {
             createAlertDialog("Name cannot be empty, please try again.");
             return;
         }
+        login_prefs_editor.clear();
         if (save_login_checkBox.isChecked()) {
-            login_prefs_editor.clear();
             login_prefs_editor.putBoolean("saveLogin", true);
-            login_prefs_editor.putString("username", username.toString());
-            login_prefs_editor.putString("password", password.toString());
-            login_prefs_editor.commit();
+            login_prefs_editor.putString("username", username.getText().toString());
+            login_prefs_editor.putString("password", password.getText().toString());
         } else {
-            login_prefs_editor.clear();
             login_prefs_editor.putBoolean("saveLogin", false);
-            login_prefs_editor.commit();
         }
+        login_prefs_editor.apply();
         login(username.getText().toString().trim());
     }
 
@@ -106,17 +100,15 @@ public class LoginActivity extends AppCompatActivity {
             createAlertDialog("Name cannot be empty, please try again.");
             return;
         }
+        login_prefs_editor.clear();
         if (save_login_checkBox.isChecked()) {
-            login_prefs_editor.clear();
             login_prefs_editor.putBoolean("saveLogin", true);
             login_prefs_editor.putString("username", username.toString());
             login_prefs_editor.putString("password", password.toString());
-            login_prefs_editor.commit();
         } else {
-            login_prefs_editor.clear();
             login_prefs_editor.putBoolean("saveLogin", false);
-            login_prefs_editor.commit();
         }
+        login_prefs_editor.apply();
         register();
     }
 
@@ -124,11 +116,10 @@ public class LoginActivity extends AppCompatActivity {
         connectServeur(userId);
 
         String jsonString = "{ username:" + username.getText().toString() + ", password:" + password.getText().toString() + "}";
-        JSONObject jsonObj = null;
+        JSONObject jsonObj;
         try {
             jsonObj = new JSONObject(jsonString);
             socket.emit("new connection", jsonObj);
-
         } catch (JSONException e) {
             Log.e("GeomsgClient", "Could not parse malformed JSON: \"" + jsonString + "\"");
             e.printStackTrace();
@@ -264,6 +255,7 @@ public class LoginActivity extends AppCompatActivity {
         AlertDialog alert = builder.create();
         alert.show();
     }
+
     // unused methode
     private boolean isEmailValid(String email) { return (email.matches("[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+")); }
 
