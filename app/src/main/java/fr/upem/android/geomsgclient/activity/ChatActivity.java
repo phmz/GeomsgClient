@@ -16,11 +16,9 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -30,8 +28,6 @@ import fr.upem.android.geomsgclient.Singleton;
 import fr.upem.android.geomsgclient.client.ChatAdapter;
 import fr.upem.android.geomsgclient.client.Message;
 import fr.upem.android.geomsgclient.client.MessageStatus;
-import fr.upem.android.geomsgclient.client.User;
-import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
@@ -39,7 +35,6 @@ public class ChatActivity extends AppCompatActivity {
     private Socket socket;
     private String userId;
     private EditText messageText;
-    private String serverAddress;
     private Location currentLocation;
     private ListView chatListView;
     private ChatAdapter chatAdapter;
@@ -123,6 +118,7 @@ public class ChatActivity extends AppCompatActivity {
         } else{
             sendButton.setOnClickListener(sendMsgOn);
         }
+
         intentBroadcast = new IntentFilter(Intent.ACTION_AIRPLANE_MODE_CHANGED);
 
         airplaneBroadcast = new BroadcastReceiver() {
@@ -227,24 +223,12 @@ public class ChatActivity extends AppCompatActivity {
         addMessage(message, 0);
     }
 
-    public void sendMessage(View v) {
-        String msg = messageText.getText().toString().trim();
-
-        //displayToast(msg);
-        attemptSend(msg);
-        //attemptSend("Serie volui potui iis paulo uno primo nulli est. Liberet effingo im gi quantum id ad facilem.");
-        //attemptSend("Persuasi fortasse aliaeque ex du supponit periculi.");
-        //attemptSend("Abducendam imo his mem inchoandum geometriam conjunctam credidisse. Tur fal amen vix ipsa cum suae. An ut cognosco earundem credimus. De simus si vi utrum aliud omnis istas. Judicem studiis ac proponi nemoque ex. De quoties ex virorum effingo. De totamque de occurret an credenda referrem.");
-
-    }
-
     private Emitter.Listener onUpdateChat = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    //JSONObject data = (JSONObject) args[0];
                     JSONObject data = (JSONObject) args[0];
                     try {
                         String userId = data.getString("userId");

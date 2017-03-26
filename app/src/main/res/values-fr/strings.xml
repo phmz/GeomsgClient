@@ -18,4 +18,5 @@
     <string name="reconnection_message">Reconnection au server en cours ...</string>
     <string name="airplane_message">Vous ne pouvez pas envoyer de message en mode avion</string>
     <string name="airplane_title">Mode avion active</string>
+    <string name="Location_needed">La localisation est necessaire pour pouvoir utiliser Geomsgclient</string>
 </resources>

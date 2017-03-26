@@ -21,4 +21,5 @@
     <string name="reconnection_message">Reconnection to the server ...</string>
     <string name="airplane_title">Airplane is activated</string>
     <string name="airplane_message">Sorry, you can\'t send message in airplane mode on</string>
+    <string name="Location_needed">Location on your phone is needed to use this Geomsgclient</string>
 </resources>
