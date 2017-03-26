@@ -12,12 +12,21 @@ public class Message {
     private MessageStatus status;
     private final int userId;
     private final Date messageTime;
+    private boolean planified;
 
     public Message(String message, MessageStatus status, int userId, Date messageTime) {
         this.message = message;
         this.status = status;
         this.userId = userId;
         this.messageTime = messageTime;
+    }
+
+    public Message(String message, MessageStatus status, int userId, Date messageTime, boolean planified) {
+        this.message = message;
+        this.status = status;
+        this.userId = userId;
+        this.messageTime = messageTime;
+        this.planified=planified;
     }
 
     public MessageStatus getStatus() {
@@ -48,5 +57,13 @@ public class Message {
                 ", userId=" + userId +
                 ", messageTime=" + messageTime +
                 '}';
+    }
+
+    public boolean isPlanified() {
+        return planified;
+    }
+
+    public void setPlanified(boolean planified) {
+        this.planified = planified;
     }
 }
