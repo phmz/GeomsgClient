@@ -17,4 +17,8 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+    <string name="Reconnection_title">Waiting for reconnecting</string>
+    <string name="reconnection_message">Reconnection to the server ...</string>
+    <string name="airplane_title">Airplane is activated</string>
+    <string name="airplane_message">Sorry, you can\'t send message in airplane mode on</string>
 </resources>

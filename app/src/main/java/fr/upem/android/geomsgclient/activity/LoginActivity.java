@@ -22,6 +22,7 @@ import java.net.URISyntaxException;
 import fr.upem.android.geomsgclient.R;
 import fr.upem.android.geomsgclient.Singleton;
 import io.socket.client.IO;
+import io.socket.client.Manager;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
@@ -38,8 +39,8 @@ public class LoginActivity extends AppCompatActivity {
     private EditText username;
     private EditText password;
     private Socket socket;
-    private String serverAddress = "http://geomsgserver.herokuapp.com/";
-    //private String serverAddress = "http://192.168.0.11:3000";
+    //private String serverAddress = "http://geomsgserver.herokuapp.com/";
+    private String serverAddress = "http://192.168.0.11:3000";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +75,11 @@ public class LoginActivity extends AppCompatActivity {
                 onRegister(v);
             }
         });
+        if(Singleton.getInstance().getUserId() != null){
+            System.out.println("Skip LoginActivity");
+            changeActivity();
+            LoginActivity.this.finish();
+        }
     }
 
     public void onLogin(View v) {
@@ -127,12 +133,12 @@ public class LoginActivity extends AppCompatActivity {
             Log.e("GeomsgClient", "Could not parse malformed JSON: \"" + jsonString + "\"");
             e.printStackTrace();
         }
-
     }
 
     private void connectServeur(String userId) {
         try {
             IO.Options options = new IO.Options();
+            options.reconnection = true;
             options.query = "userId=" + userId;
             socket = IO.socket(serverAddress, options);
         } catch (URISyntaxException e) {
@@ -146,8 +152,8 @@ public class LoginActivity extends AppCompatActivity {
         socket.on("register_val", onRegistered);
         socket.connect();
         Location location = new Location("dummyprovider");
-        location.setLatitude(2.);
-        location.setLongitude(2.);
+        location.setLatitude(10.);
+        location.setLongitude(10.);
         Singleton.getInstance().init(socket, userId, location, serverAddress);
     }
 

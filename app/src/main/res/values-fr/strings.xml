@@ -14,4 +14,8 @@
     <string name="action_sign_up_short">Inscription</string>
     <string name="title_activity_login">Connexion</string>
     <string name="save_data">se souvenir de moi</string>
+    <string name="Reconnection_title">En attente de reconnexion</string>
+    <string name="reconnection_message">Reconnection au server en cours ...</string>
+    <string name="airplane_message">Vous ne pouvez pas envoyer de message en mode avion</string>
+    <string name="airplane_title">Mode avion active</string>
 </resources>
