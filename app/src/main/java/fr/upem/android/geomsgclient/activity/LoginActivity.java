@@ -25,6 +25,8 @@ import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
+import static android.content.Context.MODE_PRIVATE;
+
 public class LoginActivity extends AppCompatActivity {
 
     private CheckBox save_login_checkBox;
@@ -33,7 +35,6 @@ public class LoginActivity extends AppCompatActivity {
     private Boolean saveLogin;
     Button login_button;
     Button register_button;
-
     private EditText username;
     private EditText password;
     private Socket socket;
@@ -45,10 +46,8 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-
         username = (EditText) findViewById(R.id.email);
         password = (EditText) findViewById(R.id.password);
-
         login_button = (Button) findViewById(R.id.loginButton);
         register_button = (Button) findViewById(R.id.registerButton);
         save_login_checkBox = (CheckBox) findViewById(R.id.saveCheckBox);
@@ -83,35 +82,55 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
         if (save_login_checkBox.isChecked()) {
+            login_prefs_editor.clear();
             login_prefs_editor.putBoolean("saveLogin", true);
             login_prefs_editor.putString("username", username.toString());
             login_prefs_editor.putString("password", password.toString());
             login_prefs_editor.commit();
         } else {
             login_prefs_editor.clear();
+            login_prefs_editor.putBoolean("saveLogin", false);
             login_prefs_editor.commit();
         }
         login(username.getText().toString().trim());
     }
 
-    public void onRegister(View v){
+    public void onRegister(View v) {
         if (username.getText().toString().trim().isEmpty() || username == null) {
             createAlertDialog("Name cannot be empty, please try again.");
             return;
         }
         if (save_login_checkBox.isChecked()) {
+            login_prefs_editor.clear();
             login_prefs_editor.putBoolean("saveLogin", true);
             login_prefs_editor.putString("username", username.toString());
             login_prefs_editor.putString("password", password.toString());
             login_prefs_editor.commit();
         } else {
             login_prefs_editor.clear();
+            login_prefs_editor.putBoolean("saveLogin", false);
             login_prefs_editor.commit();
         }
         register();
     }
 
     private void login(String userId) {
+        connectServeur(userId);
+
+        String jsonString = "{ username:" + username.getText().toString() + ", password:" + password.getText().toString() + "}";
+        JSONObject jsonObj = null;
+        try {
+            jsonObj = new JSONObject(jsonString);
+            socket.emit("new connection", jsonObj);
+
+        } catch (JSONException e) {
+            Log.e("GeomsgClient", "Could not parse malformed JSON: \"" + jsonString + "\"");
+            e.printStackTrace();
+        }
+
+    }
+
+    private void connectServeur(String userId) {
         try {
             IO.Options options = new IO.Options();
             options.query = "userId=" + userId;
@@ -123,17 +142,73 @@ public class LoginActivity extends AppCompatActivity {
         socket.on(Socket.EVENT_DISCONNECT, onDisconnect);
         socket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
         socket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
+        socket.on("connection_val", onConnected);
+        socket.on("register_val", onRegistered);
         socket.connect();
         Location location = new Location("dummyprovider");
         location.setLatitude(2.);
         location.setLongitude(2.);
         Singleton.getInstance().init(socket, userId, location, serverAddress);
+    }
 
-        //TODO : si login ok coté serveur ( mdp ok et user ok) alors continue
-        socket.emit("new connection", userId, password.getText().toString());
+
+    private Emitter.Listener onConnected = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    JSONObject data = (JSONObject) args[0];
+                    try {
+                        if(data.getBoolean("connected")){
+                            changeActivity();
+                            LoginActivity.this.finish();
+                        }
+                        else{
+                            createAlertDialog("invalid email or password");
+                        }
+                    } catch (JSONException e) {
+                        createAlertDialog("Login error");
+                    }
+                }
+            });
+        }
+    };
+
+    private void changeActivity(){
         Intent intent = new Intent(this, UserListActivity.class);
         startActivity(intent);
     }
+
+    private Emitter.Listener onRegistered = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    JSONObject data = (JSONObject) args[0];
+                    try {
+                        if(data.getBoolean("registered")){
+                            String jsonString = "{ username:" + username.getText().toString() + ", password:" + password.getText().toString() + "}";
+                            JSONObject jsonObj = null;
+                            try {
+                                jsonObj = new JSONObject(jsonString);
+                                socket.emit("new connection", jsonObj);
+
+                            } catch (JSONException e) {
+                                Log.e("GeomsgClient", "Could not parse malformed JSON: \"" + jsonString + "\"");
+                                e.printStackTrace();
+                            }
+                        } else {
+                            createAlertDialog("email already registered");
+                        }
+                    } catch (JSONException e) {
+                        createAlertDialog("register error");
+                    }
+                }
+            });
+        }
+    };
 
     private Emitter.Listener onConnect = new Emitter.Listener() {
         @Override
@@ -154,7 +229,6 @@ public class LoginActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     Toast.makeText(getApplicationContext(), "You disconnected from " + serverAddress, Toast.LENGTH_LONG).show();
-
                 }
             });
         }
@@ -184,19 +258,28 @@ public class LoginActivity extends AppCompatActivity {
         AlertDialog alert = builder.create();
         alert.show();
     }
-
-    private boolean isEmailValid(String email) {
-        return (email.matches("[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+"));
-    }
+    // unused methode
+    private boolean isEmailValid(String email) { return (email.matches("[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+")); }
 
     private boolean isPasswordValid(String password) {
         return password.length() > 4;
     }
 
-    private void register(){
-        if(isEmailValid(username.getText().toString()) && isPasswordValid(password.getText().toString())){
-            //TODO : try add user to serveur then connect
+    private void register() {
+
+        connectServeur(username.getText().toString());
+        if (isPasswordValid(password.getText().toString())) {
+            String jsonString = "{ username:" + username.getText().toString() + ", password:" + password.getText().toString() + "}";
+            JSONObject jsonObj = null;
+            try {
+                jsonObj = new JSONObject(jsonString);
+                socket.emit("register", jsonObj);
+            } catch (JSONException e) {
+                Log.e("GeomsgClient", "Could not parse malformed JSON: \"" + jsonString + "\"");
+                e.printStackTrace();
+            }
+        } else {
+            createAlertDialog("Invalid password");
         }
-        login(username.getText().toString());
     }
 }
